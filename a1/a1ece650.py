@@ -3,22 +3,36 @@ import sys
 import math
 # YOUR CODE GOES HERE
 class street_Database(object):
-   def __init__(self, data={}):
+    def __init__(self, data={}):
         self.data = data
-   def generate(self):
+    def generate(self):
         return self.data
-   def add(self, StreetName, tuples):
-       for key,value in self.data.items():
+    def add(self, StreetName, tuples):
+        for key,value in self.data.items():
             if StreetName == key:
                 raise Exception('Error: duplicate street being added')
-       self.data[StreetName] = tuples
-   def 
+        self.data[StreetName] = tuples
+    def remove(self, StreetName, tuples):
+        exits = False
+        for key,val in self.data.items():
+            if (key == StreetName):
+                exits = True    
+        if (exits == False):
+            raise Exception('Error: street can;t be removed because it does not exist')
+        self.data.pop(StreetName)
+    def modify(self, StreetName, tuples):
+        exits = False
+        for key,val in self.data.items():
+            if (key == StreetName):
+                exits = True    
+        if (exits == False):
+            raise Exception('Error: street can;t be removed because it does not exist')
+        self.data[StreetName] = tuples
 def parseLine(line):
     sp = line.strip().split('\"')
     cmd = None
     StreetName = None
     tuples = [] 
-    print(sp)
     cmd = sp[0].strip().split()
     if (cmd[0] == 'gg'):
         if (len(sp) > 1):
@@ -52,11 +66,17 @@ def main():
         if line == "":
             break
         #try:
-            cmd, StreetName, tuples=parseLine(line)
-            if (cmd == 'add'):
-        except Exception as e:
-            print('Error: ' + str(e), file=sys.stderr)
-        
+        cmd, StreetName, tuples=parseLine(line)
+        if (cmd == 'add'):
+            a.add(StreetName,tuples)
+        elif (cmd == 'mod'):
+            a.modify(StreetName,tuples)
+        elif (cmd == 'rm'):
+            a.remove(StreetName,tuples)
+        elif (cmd == 'gg'):
+            print(a.generate())        
+        #except Exception as e:
+         #   print('Error: ' + str(e), file=sys.stderr) 
 
         # method to access each individual element in tuple
         #print (tuples[0][1])
