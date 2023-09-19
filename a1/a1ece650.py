@@ -6,9 +6,10 @@ import pylab as pl
 from matplotlib import collections as mc
 # YOUR CODE GOES HERE
 def plot_function(database):
-    list = []
+    lines = []
     for key, value in database.items():
-        list.append(value)
+        lines.append(value)
+    print (lines)
     c = np.array([(1, 0, 0, 1), (0, 1, 0, 1), (0, 0, 1, 1)])
     lc = mc.LineCollection(lines, colors=c, linewidths=2)
     fig, ax = pl.subplots()
@@ -90,7 +91,7 @@ def main():
             a.remove(StreetName,tuples)
         elif (cmd == 'gg'):
             database = a.generate()   
-            plot(database)  
+            plot_function(database)  
         #except Exception as e:
          #   print('Error: ' + str(e), file=sys.stderr) 
 
