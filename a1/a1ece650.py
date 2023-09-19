@@ -1,7 +1,21 @@
 #!/usr/bin/env python3
 import sys
 import math
+import numpy as np
+import pylab as pl
+from matplotlib import collections as mc
 # YOUR CODE GOES HERE
+def plot_function(database):
+    list = []
+    for key, value in database.items():
+        list.append(value)
+    c = np.array([(1, 0, 0, 1), (0, 1, 0, 1), (0, 0, 1, 1)])
+    lc = mc.LineCollection(lines, colors=c, linewidths=2)
+    fig, ax = pl.subplots()
+    ax.add_collection(lc)
+    ax.autoscale()
+    ax.margins(0.1)
+
 class street_Database(object):
     def __init__(self, data={}):
         self.data = data
@@ -60,6 +74,7 @@ def main():
     # sample code to read from stdin.
     # make sure to remove all spurious print statements as required
     # by the assignment
+    database = {}
     a = street_Database()
     while True:
         line = sys.stdin.readline()
@@ -74,7 +89,8 @@ def main():
         elif (cmd == 'rm'):
             a.remove(StreetName,tuples)
         elif (cmd == 'gg'):
-            print(a.generate())        
+            database = a.generate()   
+            plot(database)  
         #except Exception as e:
          #   print('Error: ' + str(e), file=sys.stderr) 
 
