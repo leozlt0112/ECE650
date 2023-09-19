@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 import sys
 import math
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
 import numpy as np
 import pylab as pl
 from matplotlib import collections as mc
@@ -9,17 +12,18 @@ def plot_function(database):
     lines = []
     for key, value in database.items():
         lines.append(value)
-    print (lines)
+   # print (lines)
     c = np.array([(1, 0, 0, 1), (0, 1, 0, 1), (0, 0, 1, 1)])
     lc = mc.LineCollection(lines, colors=c, linewidths=2)
     fig, ax = pl.subplots()
     ax.add_collection(lc)
     ax.autoscale()
     ax.margins(0.1)
+    pl.savefig('plot.png')
 
 class street_Database(object):
-    def __init__(self, data={}):
-        self.data = data
+    def __init__(self):
+        self.data = {}
     def generate(self):
         return self.data
     def add(self, StreetName, tuples):
@@ -90,7 +94,8 @@ def main():
         elif (cmd == 'rm'):
             a.remove(StreetName,tuples)
         elif (cmd == 'gg'):
-            database = a.generate()   
+            database = a.generate()
+            print(database)
             plot_function(database)  
         #except Exception as e:
          #   print('Error: ' + str(e), file=sys.stderr) 
