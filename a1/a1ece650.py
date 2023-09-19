@@ -8,6 +8,54 @@ import numpy as np
 import pylab as pl
 from matplotlib import collections as mc
 # YOUR CODE GOES HERE
+class Point(object):
+    def __init__ (self, x, y):
+        self.x = float(x)
+        self.y = float(y)
+    def __str__ (self):
+        return '(' + str(self.x) + ',' + str(self.y) + ')'
+    def get(self):
+        return (x,y)
+class Line:
+    def __init__ (self, src, dst):
+        self.src = src
+        self.dst = dst
+    def __str__(self):
+        return str(self.src) + '-->' + str(self.dst)
+
+class Graph:
+    def __init__(self):
+        Graph.data = None
+        Graph.V = {}
+        Graph.E = {}
+    def keep_database(self, database):
+        Graph.database = database
+def find_intersect(database):
+    lines=[]
+    points=[]
+    for key, value in database.items():
+        lines.append(value)
+    for i in range(0,len(lines)):
+        for j in range(0,len(lines[i])):
+            for k in range(0,len(lines[i][j])):
+                print(k)
+                x1=lines[i][j][k]
+                y1=lines[i][j][k+1]
+                this_tuple=(x1,y1)
+                points.append(this_tuple)
+    print(points)
+   # x2, y2 = l1.dst.x, l1.dst.y
+   # x3, y3 = l2.src.x, l2.src.y
+   # x4, y4 = l2.dst.x, l2.dst.y
+
+    xnum = ((x1*y2-y1*x2)*(x3-x4) - (x1-x2)*(x3*y4-y3*x4))
+    xden = ((x1-x2)*(y3-y4) - (y1-y2)*(x3-x4))
+    xcoor =  xnum / xden
+
+    ynum = (x1*y2 - y1*x2)*(y3-y4) - (y1-y2)*(x3*y4-y3*x4)
+    yden = (x1-x2)*(y3-y4) - (y1-y2)*(x3-x4)
+    ycoor = ynum / yden
+    return (xcoor,ycoor)       
 def plot_function(database):
     lines = []
     for key, value in database.items():
@@ -20,7 +68,6 @@ def plot_function(database):
     ax.autoscale()
     ax.margins(0.1)
     pl.savefig('plot.png')
-
 class street_Database(object):
     def __init__(self):
         self.data = {}
@@ -81,6 +128,7 @@ def main():
     # by the assignment
     database = {}
     a = street_Database()
+    points = None
     while True:
         line = sys.stdin.readline()
         if line == "":
@@ -88,15 +136,15 @@ def main():
         #try:
         cmd, StreetName, tuples=parseLine(line)
         if (cmd == 'add'):
-            a.add(StreetName,tuples)
+            a.add(StreetName,tuples)   
         elif (cmd == 'mod'):
             a.modify(StreetName,tuples)
         elif (cmd == 'rm'):
             a.remove(StreetName,tuples)
         elif (cmd == 'gg'):
             database = a.generate()
-            print(database)
-            plot_function(database)  
+            #Graph.keep_database(b)
+            array=find_intersect(database)
         #except Exception as e:
          #   print('Error: ' + str(e), file=sys.stderr) 
 
