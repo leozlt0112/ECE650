@@ -7,6 +7,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pylab as pl
 from matplotlib import collections as mc
+from math import sqrt
+
 # YOUR CODE GOES HERE
 def plot_function(database):
     lines = []
@@ -22,23 +24,23 @@ def plot_function(database):
     pl.savefig('plot.png')
 def check_intersect(newlist):
     intersect = None
-    print(newlist)
+    #print(newlist)
     x1 = newlist[0][0]
-    print("This is x1",x1)
+    ##print("This is x1",x1)
     y1 = newlist[0][1]
-    print("This is y1", y1)
+    #print("This is y1", y1)
     x2 = newlist[1][0]
-    print("This is x2", x2)
+    #print("This is x2", x2)
     y2 = newlist[1][1]
-    print("This is y2", y2)
+    #print("This is y2", y2)
     x3 = newlist[2][0]
-    print("This is x3", x3)
+    #print("This is x3", x3)
     y3 = newlist[2][1]
-    print("This is y3", y3)
+    #print("This is y3", y3)
     x4 = newlist[3][0]
-    print("This is x4", x4)
+    #print("This is x4", x4)
     y4 = newlist[3][1]
-    print("This is y4", y4)
+    #print("This is y4", y4)
     ## please add corner case to check for slope = 0 case
 
     flag = True
@@ -62,15 +64,17 @@ def check_intersect(newlist):
             intersect = (px, py)
     return intersect
 def Vertex_generator(database):
+    intersect = []
     Vertexes = []
     tuples = None
     newlist = []
+    Edges = []
     keys_list= list(database.keys())
-    print("New keys",keys_list)
+    #print("New keys",keys_list)
     for i in range(len(keys_list)):
         for j in range(i + 1, len(keys_list)):
-            print("This is i", i)
-            print("This is J", j)
+            #print("This is i", i)
+            #print("This is J", j)
             first_key = keys_list[i]
             second_key = keys_list[j]
             for k in range(len(database[first_key])-1):
@@ -90,9 +94,152 @@ def Vertex_generator(database):
                         Vertexes.append(pt3)
                         Vertexes.append(pt4)
                         Vertexes.append(tuples)
+                        intersect.append(tuples)
+                        Edges.append((pt1,tuples))
+                        Edges.append((pt2,tuples))
+                        Edges.append((pt3,tuples))
+                        Edges.append((pt4,tuples))
                     if (len(newlist) == 4):
                         newlist.clear()
-    return Vertexes
+    return Vertexes,intersect, Edges
+def distance(x1,y1,x2,y2):
+    distance = sqrt((x2-x1)**2 + (y2-y1)**2)
+    return distance
+def Edge_handler(V,I,E):
+    E_to_be_deleted = []
+    for edge_index in range(len(E)):
+        trial_edge_src_x = E[edge_index][0][0]
+        trial_edge_src_y = E[edge_index][0][1]
+        trial_edge_dst_x = E[edge_index][1][0]
+        trial_edge_dst_y = E[edge_index][1][1]
+        trial_edge_dst = distance(trial_edge_src_x,trial_edge_src_y,trial_edge_dst_x,trial_edge_dst_y)
+        #print(trial_edge_dst)
+        for vertex_index in range(len(V)):
+         #   print(V[vertex_index])
+            if (V[vertex_index] == E[edge_index][0] or V[vertex_index] == E[edge_index][1]):
+                continue
+            else:
+                Vertex_dst_x = V[vertex_index][0]
+                Vertex_dst_y = V[vertex_index][1]
+                Vertex_dst_src = distance(trial_edge_src_x,trial_edge_src_y,Vertex_dst_x,Vertex_dst_y)
+          #      print(Vertex_dst_src)
+                Vertex_dst_dst = distance(Vertex_dst_x,Vertex_dst_y,trial_edge_dst_x,trial_edge_dst_y)
+           #     print(Vertex_dst_dst)
+                if (trial_edge_dst == Vertex_dst_src + Vertex_dst_dst):
+                    E_to_be_deleted.append(E[edge_index])
+            #        print("Edges to be deleted",E_to_be_deleted)
+                    break
+    E = [x for x in E if x not in E_to_be_deleted] 
+    return E
+def vertex_exist_within(intersect_src_x,intersect_src_y,intersect_dst_x,intersect_dst_y,V):
+    vertex_exist_within = False
+    for vertex_index in range(len(V)):
+        if (V[vertex_index][0] == intersect_src_x and V[vertex_index][1] == intersect_src_y) or (V[vertex_index][0] == intersect_dst_x and V[vertex_index][1] == intersect_dst_y):
+            continue
+        else:
+            trial_edge_dst = distance(intersect_src_x,intersect_src_y,intersect_dst_x,intersect_dst_y)
+            Vertex_dst_x = V[vertex_index][0]
+            Vertex_dst_y = V[vertex_index][1]
+            Vertex_dst_src = distance(intersect_src_x,intersect_src_y,Vertex_dst_x,Vertex_dst_y)
+          #      print(Vertex_dst_src)
+            Vertex_dst_dst = distance(Vertex_dst_x,Vertex_dst_y,intersect_dst_x,intersect_dst_y)
+           #     print(Vertex_dst_dst)
+            if (trial_edge_dst == Vertex_dst_src + Vertex_dst_dst):
+                vertex_exist_within = True
+    return vertex_exist_within
+def find_edges_among_intersects(database, I, E,V):
+    new_Edges = []
+    if (len(I) <= 1):
+        return new_Edges
+    else:
+        for index_intersect in range(len(I)-1):
+            print(I[index_intersect])
+            print(I[index_intersect+1])
+            if (I[index_intersect][1] == I[index_intersect+1][1]):
+                if (I[index_intersect][0] <= I[index_intersect+1][0]):
+                    intersect_src_x = I[index_intersect][0]
+                    intersect_src_y = I[index_intersect][1]
+                    intersect_dst_x = I[index_intersect+1][0]
+                    intersect_dst_y = I[index_intersect+1][1]
+                else:
+                    intersect_src_x = I[index_intersect+1][0]
+                    intersect_src_y = I[index_intersect+1][1]
+                    intersect_dst_x = I[index_intersect][0]
+                    intersect_dst_y = I[index_intersect][1]
+            else:
+                if I[index_intersect][0] <= I[index_intersect+1][0]:
+                    if I[index_intersect][1] <= I[index_intersect+1][1]:
+                        intersect_src_x = I[index_intersect][0]
+                        intersect_src_y = I[index_intersect][1]
+                        intersect_dst_x = I[index_intersect+1][0]
+                        intersect_dst_y = I[index_intersect+1][1]
+                    else:
+                        intersect_src_x = I[index_intersect+1][0]
+                        intersect_src_y = I[index_intersect+1][1]
+                        intersect_dst_x = I[index_intersect][0]
+                        intersect_dst_y = I[index_intersect][1]
+                else:
+                    if I[index_intersect][1] <= I[index_intersect+1][1]:
+                        intersect_src_x = I[index_intersect][0]
+                        intersect_src_y = I[index_intersect][1]
+                        intersect_dst_x = I[index_intersect+1][0]
+                        intersect_dst_y = I[index_intersect+1][1]
+                    else:
+                        intersect_src_x = I[index_intersect+1][0]
+                        intersect_src_y = I[index_intersect+1][1]
+                        intersect_dst_x = I[index_intersect][0]
+                        intersect_dst_y = I[index_intersect][1]
+            for key in database:
+                for value_index in range(len(database[key])-1):
+                    if database[key][value_index][0] <= database[key][value_index+1][0]:
+                        if database[key][value_index][1] <= database[key][value_index+1][1]:
+                            database_src_x = database[key][value_index][0]
+                            database_src_y = database[key][value_index][1]
+                            database_dst_x = database[key][value_index+1][0]
+                            database_dst_y = database[key][value_index+1][1]
+                        else:
+                            database_src_x = database[key][value_index+1][0]
+                            database_src_y = database[key][value_index+1][1]
+                            database_dst_x = database[key][value_index][0]
+                            database_dst_y = database[key][value_index][1]
+                    else:
+                        if database[key][value_index][1] < database[key][value_index+1][1]:
+                            database_src_x = database[key][value_index][0]
+                            database_src_y = database[key][value_index][1]
+                            database_dst_x = database[key][value_index+1][0]
+                            database_dst_y = database[key][value_index+1][1]    
+                        else:
+                            database_src_x = database[key][value_index+1][0]
+                            database_src_y = database[key][value_index+1][1]
+                            database_dst_x = database[key][value_index][0]
+                            database_dst_y = database[key][value_index][1]
+                    ## edge case, when one of them is vertical 
+                    if (database_src_x == database_dst_x) or (intersect_src_x == intersect_dst_x):
+                        print("Current database source", database[key][value_index])
+                        print("Current database dst", database[key][value_index+1])
+                        print("Current database source x",database_src_x)
+                        print("Current database source y",database_src_y)
+                        print("Current database dst x",database_dst_x)
+                        print("Current database dst y", database_dst_y)
+                            # overlap
+                        if (database_src_x == intersect_src_x):
+                            if (intersect_src_y >= database_src_y ) and (intersect_dst_y <= database_dst_y):
+                                if(vertex_exist_within(intersect_src_x,intersect_src_y,intersect_dst_x,intersect_dst_y,V) == False):
+                                    tuple1 = (intersect_src_x, intersect_src_y)
+                                    tuple2 = (intersect_dst_x, intersect_dst_y)
+                                    newtuple = None
+                                    newtuple =(tuple1,tuple2)
+                                    print("This is new tuple",newtuple)
+                                    new_Edges.append(newtuple)
+                    else:
+                        if (intersect_src_y >= database_src_y ) and (intersect_dst_y <= database_dst_y):
+                            if (intersect_src_x >=  database_src_x) and (intersect_dst_x <= database_dst_x):
+                                if (vertex_exist_within(intersect_src_x,intersect_src_y,intersect_dst_x,intersect_dst_y,V) == False):
+                                    tuple1 = (intersect_src_x, intersect_src_y)
+                                    tuple2 = (intersect_dst_x, intersect_dst_y)
+                                    newtuple =(tuple1,tuple2)
+                                    new_Edges.append(newtuple)
+    return new_Edges           
 class street_Database(object):
     def __init__(self):
         self.data = {}
@@ -135,6 +282,7 @@ def parseLine(line):
     elif (cmd[0] == 'add'):
         StreetName = sp[1]
         temp_coor = sp[2].strip().split()
+        #print(temp_coor)
         for i in range(0,len(temp_coor)):
             tuples.append(eval(str(temp_coor[i])))
     elif (cmd[0] == 'mod'):
@@ -146,14 +294,40 @@ def parseLine(line):
         raise Exception('Error: Unknown Command') 
     return cmd[0], StreetName, tuples
 class Graph(object):
-    def __init__(self,database, Vertex):
+    def __init__(self,database, Vertex, E):
         self.D = database
         self.vertexdata = Vertex
+        self.edgedata = E
         self.output_vertex ={}
+        self.output_Edge = []
     def generate_outputvertex(self):
         for i in range(len(self.vertexdata)):
-            self.output_vertex['{0}'.format(i+1)]=self.vertexdata[i]
+            self.output_vertex['{0}'.format(i+1)]=self.vertexdata[i]            
         return self.output_vertex
+    def generate_outputEdge(self):
+        element1 = None
+        element2 = None
+        count = 0
+        for index in range(len(self.edgedata)):
+            for i in range(len(self.edgedata[index])-1):
+                print("first edge",self.edgedata[index][i])
+                print("second edge",self.edgedata[index][i+1])
+                for key,value in self.output_vertex.items():
+                    print("This is the value i am on", value)
+                    if (self.edgedata[index][i] == value):
+                        element1 = int(key)
+                        print("first tuple", element1)
+                        count = count + 1
+                    if (self.edgedata[index][i+1] == value):
+                        element2 = int(key)
+                        print("second tuple", element2)
+                        count = count + 1
+                    print("Current counter", count)
+                    if (count == 2):
+                        tuple = (element1, element2)
+                        self.output_Edge.append(tuple)
+                        count = 0
+        return self.output_Edge
 def main():
     # YOUR MAIN CODE GOES HERE
 
@@ -161,6 +335,8 @@ def main():
     # make sure to remove all spurious print statements as required
     # by the assignment
     V = {}
+    I=[]
+    E = []
     database = {}
     a = street_Database()
     graphs = None
@@ -180,13 +356,31 @@ def main():
             database = a.generate()
             print(database)
             plot_function(database)  
-            V=Vertex_generator(database)
+            V,I,E=Vertex_generator(database)
             V=list(set(V))
             print("This is Vertex", V)
-            graphs = Graph(database,V)
-            c = graphs.generate_outputvertex()
-            print(c)
-        #except Exception as e:
+            I=list(set(I))
+            print("This is Intercepts", I)
+            E=list(set(E))
+            #print("This is Edges", E)
+            E=Edge_handler(V,I,E)
+            print("This is Edges", E)
+            E2=find_edges_among_intersects(database,I, E,V)
+            print("needed to be added", E2)
+            for value in E2:
+                E.append(value)
+            print (E)
+            b = Graph(database, V, E)
+            #print("new edges", E2)
+            #graphs = Graph(database,V)
+            print(b.generate_outputvertex())
+            c = b.generate_outputEdge()
+            print("E = {")
+            for values in c:
+                print("<{0},{1}>".format(values[0],values[1]))
+            #print(c)
+            #print(c)
+            #except Exception as e:
          #   print('Error: ' + str(e), file=sys.stderr) 
 
         # method to access each individual element in tuple
