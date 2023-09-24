@@ -153,74 +153,107 @@ def find_edges_among_intersects(database, I, E,V):
         return new_Edges
     else:
         for index_intersect in range(len(I)-1):
-            print(I[index_intersect])
-            print(I[index_intersect+1])
-            if (I[index_intersect][1] == I[index_intersect+1][1]):
-                if (I[index_intersect][0] <= I[index_intersect+1][0]):
-                    intersect_src_x = I[index_intersect][0]
-                    intersect_src_y = I[index_intersect][1]
-                    intersect_dst_x = I[index_intersect+1][0]
-                    intersect_dst_y = I[index_intersect+1][1]
-                else:
-                    intersect_src_x = I[index_intersect+1][0]
-                    intersect_src_y = I[index_intersect+1][1]
-                    intersect_dst_x = I[index_intersect][0]
-                    intersect_dst_y = I[index_intersect][1]
-            else:
-                if I[index_intersect][0] <= I[index_intersect+1][0]:
-                    if I[index_intersect][1] <= I[index_intersect+1][1]:
+            for (index_next) in range(index_intersect, len(I)):
+                print(I[index_intersect])
+                print(I[index_next])
+                print(I[index_intersect][0],I[index_intersect][1],I[index_next][0],I[index_next][1])
+                if (I[index_intersect] == I[index_next]):
+                    continue
+                ### check horizontal lines 
+                if (I[index_intersect][1] == I[index_next][1]):
+                    if (I[index_intersect][0] <= I[index_next][0]):
                         intersect_src_x = I[index_intersect][0]
                         intersect_src_y = I[index_intersect][1]
-                        intersect_dst_x = I[index_intersect+1][0]
-                        intersect_dst_y = I[index_intersect+1][1]
+                        intersect_dst_x = I[index_next][0]
+                        intersect_dst_y = I[index_next][1]
+                        print()
                     else:
-                        intersect_src_x = I[index_intersect+1][0]
-                        intersect_src_y = I[index_intersect+1][1]
+                        intersect_src_x = I[index_next][0]
+                        intersect_src_y = I[index_next][1]
                         intersect_dst_x = I[index_intersect][0]
                         intersect_dst_y = I[index_intersect][1]
                 else:
-                    if I[index_intersect][1] <= I[index_intersect+1][1]:
-                        intersect_src_x = I[index_intersect][0]
-                        intersect_src_y = I[index_intersect][1]
-                        intersect_dst_x = I[index_intersect+1][0]
-                        intersect_dst_y = I[index_intersect+1][1]
-                    else:
-                        intersect_src_x = I[index_intersect+1][0]
-                        intersect_src_y = I[index_intersect+1][1]
-                        intersect_dst_x = I[index_intersect][0]
-                        intersect_dst_y = I[index_intersect][1]
-            for key in database:
-                for value_index in range(len(database[key])-1):
-                    if database[key][value_index][0] <= database[key][value_index+1][0]:
-                        if database[key][value_index][1] <= database[key][value_index+1][1]:
-                            database_src_x = database[key][value_index][0]
-                            database_src_y = database[key][value_index][1]
-                            database_dst_x = database[key][value_index+1][0]
-                            database_dst_y = database[key][value_index+1][1]
+                    if I[index_intersect][0] <= I[index_next][0]:
+                        if I[index_intersect][1] <= I[index_next][1]:
+                            intersect_src_x = I[index_intersect][0]
+                            intersect_src_y = I[index_intersect][1]
+                            intersect_dst_x = I[index_next][0]
+                            intersect_dst_y = I[index_next][1]
                         else:
-                            database_src_x = database[key][value_index+1][0]
-                            database_src_y = database[key][value_index+1][1]
-                            database_dst_x = database[key][value_index][0]
-                            database_dst_y = database[key][value_index][1]
+                            intersect_src_x = I[index_next][0]
+                            intersect_src_y = I[index_next][1]
+                            intersect_dst_x = I[index_intersect][0]
+                            intersect_dst_y = I[index_intersect][1]
                     else:
-                        if database[key][value_index][1] < database[key][value_index+1][1]:
-                            database_src_x = database[key][value_index][0]
-                            database_src_y = database[key][value_index][1]
-                            database_dst_x = database[key][value_index+1][0]
-                            database_dst_y = database[key][value_index+1][1]    
+                        if I[index_intersect][1] <= I[index_next][1]:
+                            intersect_src_x = I[index_intersect][0]
+                            intersect_src_y = I[index_intersect][1]
+                            intersect_dst_x = I[index_next][0]
+                            intersect_dst_y = I[index_next][1]
                         else:
-                            database_src_x = database[key][value_index+1][0]
-                            database_src_y = database[key][value_index+1][1]
-                            database_dst_x = database[key][value_index][0]
-                            database_dst_y = database[key][value_index][1]
-                    ## edge case, when one of them is vertical 
-                    if (database_src_x == database_dst_x) or (intersect_src_x == intersect_dst_x):
-                        print("Current database source", database[key][value_index])
-                        print("Current database dst", database[key][value_index+1])
-                        print("Current database source x",database_src_x)
-                        print("Current database source y",database_src_y)
-                        print("Current database dst x",database_dst_x)
-                        print("Current database dst y", database_dst_y)
+                            intersect_src_x = I[index_next][0]
+                            intersect_src_y = I[index_next][1]
+                            intersect_dst_x = I[index_intersect][0]
+                            intersect_dst_y = I[index_intersect][1]
+                print(intersect_src_x)
+                print(intersect_src_y)
+                print(intersect_dst_x)
+                print(intersect_dst_y)
+                for key in database:
+                    for value_index in range(len(database[key])-1):
+                        if database[key][value_index][1] == database[key][value_index+1][1]:
+                            print("We are here")
+                            print("xCurrent database source", database[key][value_index])
+                            print("xCurrent database dst", database[key][value_index+1])
+                            if (database[key][value_index][0] <= database[key][value_index+1][0]):
+                                database_src_x = database[key][value_index][0]
+                                database_src_y = database[key][value_index][1]
+                                database_dst_x = database[key][value_index+1][0]
+                                database_dst_y = database[key][value_index+1][1]
+                                print("Current database source x",database_src_x)
+                                print("Current database source y",database_src_y)
+                                print("Current database dst x",database_dst_x)
+                                print("Current database dst y", database_dst_y)
+                            else:
+                                database_src_x = database[key][value_index+1][0]
+                                database_src_y = database[key][value_index+1][1]
+                                database_dst_x = database[key][value_index][0]
+                                database_dst_y = database[key][value_index][1] 
+                                print("Current database source x",database_src_x)
+                                print("Current database source y",database_src_y)
+                                print("Current database dst x",database_dst_x)
+                                print("Current database dst y", database_dst_y)     
+                        else:
+                            if database[key][value_index][0] <= database[key][value_index+1][0]:
+                                if database[key][value_index][1] <= database[key][value_index+1][1]:
+                                    database_src_x = database[key][value_index][0]
+                                    database_src_y = database[key][value_index][1]
+                                    database_dst_x = database[key][value_index+1][0]
+                                    database_dst_y = database[key][value_index+1][1]
+                                else:
+                                    database_src_x = database[key][value_index+1][0]
+                                    database_src_y = database[key][value_index+1][1]
+                                    database_dst_x = database[key][value_index][0]
+                                    database_dst_y = database[key][value_index][1]
+                            else:
+                                if database[key][value_index][1] < database[key][value_index+1][1]:
+                                    database_src_x = database[key][value_index][0]
+                                    database_src_y = database[key][value_index][1]
+                                    database_dst_x = database[key][value_index+1][0]
+                                    database_dst_y = database[key][value_index+1][1]    
+                                else:
+                                    database_src_x = database[key][value_index+1][0]
+                                    database_src_y = database[key][value_index+1][1]
+                                    database_dst_x = database[key][value_index][0]
+                                    database_dst_y = database[key][value_index][1]     
+                    print("Current database source", database[key][value_index])
+                    print("Current database dst", database[key][value_index+1])
+                    print("Current database source x",database_src_x)
+                    print("Current database source y",database_src_y)
+                    print("Current database dst x",database_dst_x)
+                    print("Current database dst y", database_dst_y)
+                     ## edge case, when two of them is vertical
+                    if (database_src_x == database_dst_x) and  (intersect_src_x == intersect_dst_x):
                             # overlap
                         if (database_src_x == intersect_src_x):
                             if (intersect_src_y >= database_src_y ) and (intersect_dst_y <= database_dst_y):
@@ -366,14 +399,23 @@ def main():
             E=Edge_handler(V,I,E)
             print("This is Edges", E)
             E2=find_edges_among_intersects(database,I, E,V)
-            print("needed to be added", E2)
+
+            print("needed to be added", (list(set(E2))))
+            E2=list(set(E2))
             for value in E2:
                 E.append(value)
             print (E)
             b = Graph(database, V, E)
             #print("new edges", E2)
             #graphs = Graph(database,V)
-            print(b.generate_outputvertex())
+            d = b.generate_outputvertex()
+            print("V = {")
+            for key,value in d.items():
+                if (int(key)) < 10:
+                    print(f'{int(key)}  {value}')
+                else:
+                    print(f'{int(key)} {value}')
+            print("}")
             c = b.generate_outputEdge()
             print("E = {")
             for values in c:
