@@ -108,6 +108,8 @@ def distance(x1,y1,x2,y2):
 def Edge_handler(V,I,E):
     E_to_be_deleted = []
     for edge_index in range(len(E)):
+        if (E[edge_index][0] == E[edge_index][1]):
+            E_to_be_deleted.append(E[edge_index])
         trial_edge_src_x = E[edge_index][0][0]
         trial_edge_src_y = E[edge_index][0][1]
         trial_edge_dst_x = E[edge_index][1][0]
@@ -202,27 +204,16 @@ def find_edges_among_intersects(database, I, E,V):
                 for key in database:
                     for value_index in range(len(database[key])-1):
                         if database[key][value_index][1] == database[key][value_index+1][1]:
-                            print("We are here")
-                            print("xCurrent database source", database[key][value_index])
-                            print("xCurrent database dst", database[key][value_index+1])
                             if (database[key][value_index][0] <= database[key][value_index+1][0]):
                                 database_src_x = database[key][value_index][0]
                                 database_src_y = database[key][value_index][1]
                                 database_dst_x = database[key][value_index+1][0]
                                 database_dst_y = database[key][value_index+1][1]
-                                print("Current database source x",database_src_x)
-                                print("Current database source y",database_src_y)
-                                print("Current database dst x",database_dst_x)
-                                print("Current database dst y", database_dst_y)
                             else:
                                 database_src_x = database[key][value_index+1][0]
                                 database_src_y = database[key][value_index+1][1]
                                 database_dst_x = database[key][value_index][0]
-                                database_dst_y = database[key][value_index][1] 
-                                print("Current database source x",database_src_x)
-                                print("Current database source y",database_src_y)
-                                print("Current database dst x",database_dst_x)
-                                print("Current database dst y", database_dst_y)     
+                                database_dst_y = database[key][value_index][1]     
                         else:
                             if database[key][value_index][0] <= database[key][value_index+1][0]:
                                 if database[key][value_index][1] <= database[key][value_index+1][1]:
@@ -265,13 +256,21 @@ def find_edges_among_intersects(database, I, E,V):
                                     print("This is new tuple",newtuple)
                                     new_Edges.append(newtuple)
                     else:
-                        if (intersect_src_y >= database_src_y ) and (intersect_dst_y <= database_dst_y):
-                            if (intersect_src_x >=  database_src_x) and (intersect_dst_x <= database_dst_x):
-                                if (vertex_exist_within(intersect_src_x,intersect_src_y,intersect_dst_x,intersect_dst_y,V) == False):
-                                    tuple1 = (intersect_src_x, intersect_src_y)
-                                    tuple2 = (intersect_dst_x, intersect_dst_y)
-                                    newtuple =(tuple1,tuple2)
-                                    new_Edges.append(newtuple)
+                        if database_src_x != database_dst_x and intersect_src_x != intersect_dst_x:
+                            print("Entered the condition when none of the two line are vertical")
+                            if (intersect_src_y >= database_src_y ) and (intersect_dst_y <= database_dst_y):
+                                if (intersect_src_x >=  database_src_x) and (intersect_dst_x <= database_dst_x):
+                                    rise_intersect = intersect_dst_y - intersect_src_y
+                                    run_intersect = intersect_dst_x - intersect_src_x
+                                    rise_db = database_dst_y - database_src_y
+                                    intersect_db = intersect_dst_x - intersect_src_x
+                                    if (rise_intersect/run_intersect == rise_db / intersect_db):
+                                        if (vertex_exist_within(intersect_src_x,intersect_src_y,intersect_dst_x,intersect_dst_y,V) == False):
+                                            tuple1 = (intersect_src_x, intersect_src_y)
+                                            tuple2 = (intersect_dst_x, intersect_dst_y)
+                                            newtuple =(tuple1,tuple2)
+                                            print("New tuple appended for conditions of 2 lines not vertical", newtuple)
+                                            new_Edges.append(newtuple)
     return new_Edges           
 class street_Database(object):
     def __init__(self):
@@ -343,19 +342,13 @@ class Graph(object):
         count = 0
         for index in range(len(self.edgedata)):
             for i in range(len(self.edgedata[index])-1):
-                print("first edge",self.edgedata[index][i])
-                print("second edge",self.edgedata[index][i+1])
                 for key,value in self.output_vertex.items():
-                    print("This is the value i am on", value)
                     if (self.edgedata[index][i] == value):
                         element1 = int(key)
-                        print("first tuple", element1)
                         count = count + 1
                     if (self.edgedata[index][i+1] == value):
                         element2 = int(key)
-                        print("second tuple", element2)
                         count = count + 1
-                    print("Current counter", count)
                     if (count == 2):
                         tuple = (element1, element2)
                         self.output_Edge.append(tuple)
@@ -405,7 +398,9 @@ def main():
             for value in E2:
                 E.append(value)
             print (E)
+            E = list(set(E))
             b = Graph(database, V, E)
+
             #print("new edges", E2)
             #graphs = Graph(database,V)
             d = b.generate_outputvertex()
@@ -417,6 +412,12 @@ def main():
                     print(f'{int(key)} {value}')
             print("}")
             c = b.generate_outputEdge()
+            d = []
+            for i in range(len(c)):
+                for j in range(i+1,len(c)):
+                    if (c[i][0] == c[j][1]) and (c[i][1] == c[j][0]):
+                        d.append(c[i])
+            c = [x for x in c if x not in d]
             print("E = {")
             for values in c:
                 print("<{0},{1}>".format(values[0],values[1]))
