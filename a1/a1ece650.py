@@ -605,9 +605,8 @@ def main():
                     for j in range(i+1,len(c)):
                         if (c[i][0] == c[j][1]) and (c[i][1] == c[j][0]):
                             d.append(c[i])
-                
-               
-                c = [x for x in c if x not in d]  # https://www.geeksforgeeks.org/python-remove-all-values-from-a-list-present-in-other-list/
+                 # https://www.geeksforgeeks.org/python-remove-all-values-from-a-list-present-in-other-list/
+                c = [x for x in c if x not in d]
                 print("E = {")
                 for values in c:
                     print("  <{0},{1}>".format(values[0],values[1]))
