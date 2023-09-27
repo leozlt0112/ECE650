@@ -8,7 +8,7 @@ import numpy as np
 import pylab as pl
 from matplotlib import collections as mc
 from math import sqrt
-
+import re
 # YOUR CODE GOES HERE
 def plot_function(database):
     lines = []
@@ -299,11 +299,21 @@ class street_Database(object):
             raise Exception('Error: street can;t be removed because it does not exist')
         self.data[StreetName] = tuples
 def parseLine(line):
-    sp = line.strip().split('\"')
-    cmd = None
-    StreetName = None
+    sp = line.strip()
+    r = re.compile('^[a-z]+')
+    c = r.findall(sp)
+    if (c == []):
+        raise Exception('First input not in letter format, Please check')
+    else:
+        print(c) 
+    cmd = c
+    second_pattern = re.compile('("[a-zA-Z]+\s+[a-zA-Z]+")|'("[a-zA-Z]+\s+[a-zA-Z]+\s+[a-zA-Z]+")')
+    StreetName = second_pattern.findall(sp)
+    if second_pattern == []:
+        raise Exception('Second input not in proper format, Please check')
+    else:
+        print (StreetName)
     tuples = [] 
-    cmd = sp[0].strip().split()
     if (cmd[0] == 'gg'):
         if (len(sp) > 1):
             raise Exception('Error: too many arguments')
