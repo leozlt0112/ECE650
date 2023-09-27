@@ -106,6 +106,7 @@ def distance(x1,y1,x2,y2):
     distance = sqrt((x2-x1)**2 + (y2-y1)**2)
     return distance
 def Edge_handler(V,I,E):
+    print(V)
     E_to_be_deleted = []
     for edge_index in range(len(E)):
         if (E[edge_index][0] == E[edge_index][1]):
@@ -131,6 +132,7 @@ def Edge_handler(V,I,E):
                     E_to_be_deleted.append(E[edge_index])
             #        print("Edges to be deleted",E_to_be_deleted)
                     break
+    
     E = [x for x in E if x not in E_to_be_deleted] 
     return E
 def vertex_exist_within(intersect_src_x,intersect_src_y,intersect_dst_x,intersect_dst_y,V):
@@ -156,9 +158,9 @@ def find_edges_among_intersects(database, I, E,V):
     else:
         for index_intersect in range(len(I)-1):
             for (index_next) in range(index_intersect, len(I)):
-                print(I[index_intersect])
-                print(I[index_next])
-                print(I[index_intersect][0],I[index_intersect][1],I[index_next][0],I[index_next][1])
+                #print(I[index_intersect])
+                #print(I[index_next])
+                #print(I[index_intersect][0],I[index_intersect][1],I[index_next][0],I[index_next][1])
                 if (I[index_intersect] == I[index_next]):
                     continue
                 ### check horizontal lines 
@@ -168,7 +170,7 @@ def find_edges_among_intersects(database, I, E,V):
                         intersect_src_y = I[index_intersect][1]
                         intersect_dst_x = I[index_next][0]
                         intersect_dst_y = I[index_next][1]
-                        print()
+                        #print()
                     else:
                         intersect_src_x = I[index_next][0]
                         intersect_src_y = I[index_next][1]
@@ -288,7 +290,7 @@ class street_Database(object):
             if (key == StreetName):
                 exits = True    
         if (exits == False):
-            raise Exception('Error: street can;t be removed because it does not exist')
+            raise Exception('Error: street can\'t be removed because it does not exist')
         self.data.pop(StreetName)
     def modify(self, StreetName, tuples):
         exits = False
@@ -296,45 +298,175 @@ class street_Database(object):
             if (key == StreetName):
                 exits = True    
         if (exits == False):
-            raise Exception('Error: street can;t be removed because it does not exist')
+            raise Exception('Error: street can\'t be added because it does not exist')
         self.data[StreetName] = tuples
 def parseLine(line):
-    sp = line.strip()
-    r = re.compile('^[a-z]+')
-    c = r.findall(sp)
-    if (c == []):
-        raise Exception('First input not in letter format, Please check')
-    else:
-        print(c) 
-    cmd = c
-    second_pattern = re.compile('("[a-zA-Z]+\s+[a-zA-Z]+")|'("[a-zA-Z]+\s+[a-zA-Z]+\s+[a-zA-Z]+")')
-    StreetName = second_pattern.findall(sp)
-    if second_pattern == []:
-        raise Exception('Second input not in proper format, Please check')
-    else:
-        print (StreetName)
+    command = ""
+    streetName = ""
     tuples = [] 
-    if (cmd[0] == 'gg'):
-        if (len(sp) > 1):
-            raise Exception('Error: too many arguments')
-    elif (cmd[0] == 'rm'):
-        if (sp[2] !=''):
-            raise Exception('Error: too many arguments')
-        StreetName = sp[1]
-    elif (cmd[0] == 'add'):
-        StreetName = sp[1]
-        temp_coor = sp[2].strip().split()
-        #print(temp_coor)
-        for i in range(0,len(temp_coor)):
-            tuples.append(eval(str(temp_coor[i])))
-    elif (cmd[0] == 'mod'):
-        StreetName = sp[1]
-        temp_coor = sp[2].strip().split()
-        for i in range(0,len(temp_coor)):
-            tuples.append(eval(str(temp_coor[i])))
+    line=line.strip()
+    for c in line:
+        if not c.isspace():
+            command = command + c
+        else:
+            break
+    line = line[len(command):] 
+    if command == "add":
+        ## delete white space
+        line=line.strip()
+        ###"C"(,lll)
+        #print(line)
+        if line[0] != '\"':
+            raise Exception("Error: bad input1")
+        else:
+            ## get rid of starting quote
+            line = line[1:]
+            streetName = ""
+            encounteredEndQuote = False
+            for c in line:
+                 #line = line[len(streetName):] does not delete the "
+                if c == '\"':
+                    encounteredEndQuote = True
+                    line = line[1:]
+                    break
+                else:
+                    streetName = streetName + c
+                    
+            if not encounteredEndQuote:
+                raise Exception("Error: bad input2")
+            ## parse line again
+            line = line[len(streetName):]
+            if (len(line) == 0) or (not line[0].isspace()):
+                raise Exception("Error: bad input3")
+
+            while len(line) > 0:
+                if (not line[0].isspace()):
+                    raise Exception("Error: bad input4")
+                line=line.strip()
+                currentCoordinate = ""
+                #print(line)
+                if line[0] != '(':
+                    raise Exception("Error: bad input4")
+                line = line [1:]
+                ecnountedclosingbracket = False 
+                for c2 in line:
+                    if c2 == ')':
+                        ecnountedclosingbracket = True
+                        line = line[1:]
+                        break
+                    else:
+                        currentCoordinate = currentCoordinate + c2
+                ""  
+                if not ecnountedclosingbracket:
+                    raise Exception("Error: bad input5")
+                currentCoordinate = re.sub(r"\s+", '', currentCoordinate)
+                coordinateMatch = re.findall("^(-?[0-9]+),(-?[0-9]+)$", currentCoordinate)
+                if len(coordinateMatch) != 1:
+                    raise Exception("Error: bad input5")
+                firstNum = int(coordinateMatch[0][0])
+                secondNum = int(coordinateMatch[0][1])
+                tuples.append((firstNum, secondNum))
+                line = line[len(currentCoordinate):]
+            if len(tuples) < 2:
+                raise Exception("Error: bad input6")
+                                        
+    elif command == "mod":
+        ## delete white space
+        line=line.strip()
+        ###"C"(,lll)
+        #print(line)
+        if line[0] != '\"':
+            raise Exception("Error: bad input1")
+        else:
+            ## get rid of starting quote
+            line = line[1:]
+            streetName = ""
+            encounteredEndQuote = False
+            for c in line:
+                 #line = line[len(streetName):] does not delete the "
+                if c == '\"':
+                    encounteredEndQuote = True
+                    line = line[1:]
+                    break
+                else:
+                    streetName = streetName + c
+                    
+            if not encounteredEndQuote:
+                raise Exception("Error: bad input2")
+            ## parse line again
+            line = line[len(streetName):]
+            if (len(line) == 0) or (not line[0].isspace()):
+                raise Exception("Error: bad input3")
+
+            while len(line) > 0:
+                if (not line[0].isspace()):
+                    raise Exception("Error: bad input4")
+                line=line.strip()
+                currentCoordinate = ""
+                print(line)
+                if line[0] != '(':
+                    raise Exception("Error: bad input4")
+                line = line [1:]
+                ecnountedclosingbracket = False 
+                for c2 in line:
+                    if c2 == ')':
+                        ecnountedclosingbracket = True
+                        line = line[1:]
+                        break
+                    else:
+                        currentCoordinate = currentCoordinate + c2
+                ""  
+                if not ecnountedclosingbracket:
+                    raise Exception("Error: bad input5")
+                currentCoordinate = re.sub(r"\s+", '', currentCoordinate)
+                coordinateMatch = re.findall("^(-?[0-9]+),(-?[0-9]+)$", currentCoordinate)
+                if len(coordinateMatch) != 1:
+                    raise Exception("Error: bad input5")
+                firstNum = int(coordinateMatch[0][0])
+                secondNum = int(coordinateMatch[0][1])
+                tuples.append((firstNum, secondNum))
+                line = line[len(currentCoordinate):]
+            if len(tuples) < 2:
+                raise Exception("Error: bad input6")
+        #print(command)
+        #print(streetName)
+        #print(tuples)  
+    elif command == "rm":
+        ## delete white space
+        line=line.strip()
+        
+        if line[0] != '\"':
+            raise Exception("Error: bad input1")
+        else:
+            ## get rid of starting quote
+            line = line[1:]
+            streetName = ""
+            encounteredEndQuote = False
+            for c in line:
+                 #line = line[len(streetName):] does not delete the "
+                if c == '\"':
+                    encounteredEndQuote = True
+                    line = line[1:]
+                    break
+                else:
+                    streetName = streetName + c
+                    
+            if not encounteredEndQuote:
+                raise Exception("Error: bad input2")
+            line = line[len(streetName):]
+            line= line.strip()
+            if (len(line)>0):
+                raise Exception("Error: bad input2")
+            ## parse line again
+
+    elif command == 'gg':
+        line = line.strip()
+        if (len(line) >= 1):
+            raise Exception("Error: bad input2")
+
     else:
-        raise Exception('Error: Unknown Command') 
-    return cmd[0], StreetName, tuples
+        raise Exception("Error: bad input")                   
+    return command, streetName, tuples
 class Graph(object):
     def __init__(self,database, Vertex, E):
         self.D = database
@@ -378,63 +510,65 @@ def main():
     graphs = None
     while True:
         line = sys.stdin.readline()
-        if line == "":
+        if line.strip() == "":
             break
-        #try:
-        cmd, StreetName, tuples=parseLine(line)
-        if (cmd == 'add'):
-            a.add(StreetName,tuples)
-        elif (cmd == 'mod'):
-            a.modify(StreetName,tuples)
-        elif (cmd == 'rm'):
-            a.remove(StreetName,tuples)
-        elif (cmd == 'gg'):
-            database = a.generate()
-            print(database)
-            plot_function(database)  
-            V,I,E=Vertex_generator(database)
-            V=list(set(V))
-            print("This is Vertex", V)
-            I=list(set(I))
-            print("This is Intercepts", I)
-            E=list(set(E))
-            #print("This is Edges", E)
-            E=Edge_handler(V,I,E)
-            print("This is Edges", E)
-            E2=find_edges_among_intersects(database,I, E,V)
+        try:
+            cmd, StreetName, tuples=parseLine(line)
+            if (cmd == 'add'):
+                a.add(StreetName,tuples)
+            elif (cmd == 'mod'):
+                a.modify(StreetName,tuples)
+            elif (cmd == 'rm'):
+                a.remove(StreetName,tuples)
+            elif (cmd == 'gg'):
+                database = a.generate()
+                print(database)
+                plot_function(database)  
+                V,I,E=Vertex_generator(database)
+                V=list(set(V))
+                print("This is Vertex", V)
+                I=list(set(I))
+                print("This is Intercepts", I)
+                E=list(set(E))
+                #print("This is Edges", E)
+                E=Edge_handler(V,I,E)
+                print("This is Edges", E)
+                E2=find_edges_among_intersects(database,I, E,V)
 
-            print("needed to be added", (list(set(E2))))
-            E2=list(set(E2))
-            for value in E2:
-                E.append(value)
-            print (E)
-            E = list(set(E))
-            b = Graph(database, V, E)
+                print("needed to be added", (list(set(E2))))
+                E2=list(set(E2))
+                for value in E2:
+                    E.append(value)
+                print (E)
+                E = list(set(E))
+                b = Graph(database, V, E)
 
-            #print("new edges", E2)
-            #graphs = Graph(database,V)
-            d = b.generate_outputvertex()
-            print("V = {")
-            for key,value in d.items():
-                if (int(key)) < 10:
-                    print(f'{int(key)}  {value}')
-                else:
-                    print(f'{int(key)} {value}')
-            print("}")
-            c = b.generate_outputEdge()
-            d = []
-            for i in range(len(c)):
-                for j in range(i+1,len(c)):
-                    if (c[i][0] == c[j][1]) and (c[i][1] == c[j][0]):
-                        d.append(c[i])
-            c = [x for x in c if x not in d]
-            print("E = {")
-            for values in c:
-                print("<{0},{1}>".format(values[0],values[1]))
-            #print(c)
-            #print(c)
-            #except Exception as e:
-         #   print('Error: ' + str(e), file=sys.stderr) 
+                #print("new edges", E2)
+                #graphs = Graph(database,V)
+                d = b.generate_outputvertex()
+                print("V = {")
+                for key,value in d.items():
+                    v1 = "{0:.2f}".format(value[0])
+                    v2 = "{0:.2f}".format(value[1])
+                    #formatted_value = (v1,v2)
+                    if (int(key)) < 10:
+                        print(f'  {int(key)}  ({v1},{v2})')
+                    else:
+                        print(f'  {int(key)}  ({v1},{v2})')
+                print("}")
+                c = b.generate_outputEdge()
+                d = []
+                for i in range(len(c)):
+                    for j in range(i+1,len(c)):
+                        if (c[i][0] == c[j][1]) and (c[i][1] == c[j][0]):
+                            d.append(c[i])
+                c = [x for x in c if x not in d]
+                print("E = {")
+                for values in c:
+                    print("  <{0},{1}>".format(values[0],values[1]))
+                print("}")
+        except Exception as e:
+            print('Error: ' + str(e), file=sys.stderr) 
 
         # method to access each individual element in tuple
         #print (tuples[0][1])
