@@ -564,7 +564,8 @@ def main():
             elif (cmd == 'gg'):
                 database = a.generate()
                 #print(database)
-                plot_function(database)  
+                
+                #plot_function(database)  
                 V,I,E=Vertex_generator(database)
                 V=list(set(V))
                 #print("This is Vertex", V)
