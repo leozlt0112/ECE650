@@ -141,8 +141,9 @@ def Edge_handler(V,I,E):
                     E_to_be_deleted.append(E[edge_index])
                     #print("Edges to be deleted",E_to_be_deleted)
                     break
-    # https://www.geeksforgeeks.org/python-remove-all-values-from-a-list-present-in-other-list/
     E = [x for x in E if x not in E_to_be_deleted] 
+    #https://www.geeksforgeeks.org/python-remove-all-values-from-a-list-present-in-other-list/
+
     return E
 def vertex_exist_within(intersect_src_x,intersect_src_y,intersect_dst_x,intersect_dst_y,V):
     vertex_exist_within = False
@@ -606,8 +607,9 @@ def main():
                     for j in range(i+1,len(c)):
                         if (c[i][0] == c[j][1]) and (c[i][1] == c[j][0]):
                             d.append(c[i])
-                 # https://www.geeksforgeeks.org/python-remove-all-values-from-a-list-present-in-other-list/
+
                 c = [x for x in c if x not in d]
+                #https://www.geeksforgeeks.org/python-remove-all-values-from-a-list-present-in-other-list/
                 print("E = {")
                 for values in c:
                     print("  <{0},{1}>".format(values[0],values[1]))
