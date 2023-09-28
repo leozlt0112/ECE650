@@ -141,9 +141,8 @@ def Edge_handler(V,I,E):
                     E_to_be_deleted.append(E[edge_index])
                     #print("Edges to be deleted",E_to_be_deleted)
                     break
+    # https://www.geeksforgeeks.org/python-remove-all-values-from-a-list-present-in-other-list/
     E = [x for x in E if x not in E_to_be_deleted] 
-    #https://www.geeksforgeeks.org/python-remove-all-values-from-a-list-present-in-other-list/
-
     return E
 def vertex_exist_within(intersect_src_x,intersect_src_y,intersect_dst_x,intersect_dst_y,V):
     vertex_exist_within = False
@@ -391,24 +390,35 @@ def parseLine(line):
                     raise Exception("Error: bad input4")
                 line = line [1:]
                 ecnountedclosingbracket = False 
-                for c2 in line:
-                    if c2 == ')':
+                for index in range(len(line)):
+                    #print(line[index])
+                    if  line[index] == ')':
                         ecnountedclosingbracket = True
-                        line = line[1:]
+                        line = line[:index] + line[index+1:]
+                        #print(line)
                         break
                     else:
-                        currentCoordinate = currentCoordinate + c2
-                ""  
+                        currentCoordinate = currentCoordinate + line[index]
+                #print(currentCoordinate)
                 if not ecnountedclosingbracket:
                     raise Exception("Error: bad input5")
+                numberofspaces = re.findall("\s+", currentCoordinate)
+                counter = 0
+                for index in range(len(numberofspaces)):
+                    for space in numberofspaces[index]:
+                        counter = counter +1
                 currentCoordinate = re.sub(r"\s+", '', currentCoordinate)
+                #print(currentCoordinate)
                 coordinateMatch = re.findall("^(-?[0-9]+),(-?[0-9]+)$", currentCoordinate)
+                #print(len(coordinateMatch))
                 if len(coordinateMatch) != 1:
                     raise Exception("Error: bad input5")
                 firstNum = int(coordinateMatch[0][0])
                 secondNum = int(coordinateMatch[0][1])
                 tuples.append((firstNum, secondNum))
-                line = line[len(currentCoordinate):]
+                #print(len(currentCoordinate))
+                line = line[len(currentCoordinate)+counter:]
+                #print(line)
             if len(tuples) < 2:
                 raise Exception("Error: bad input6")
                                         
@@ -450,16 +460,22 @@ def parseLine(line):
                     raise Exception("Error: bad input4")
                 line = line [1:]
                 ecnountedclosingbracket = False 
-                for c2 in line:
-                    if c2 == ')':
+                for index in range(len(line)):
+                    if  line[index] == ')':
                         ecnountedclosingbracket = True
-                        line = line[1:]
+                        line = line[:index] + line[index+1:]
+                        #print(line)
                         break
                     else:
-                        currentCoordinate = currentCoordinate + c2
-                ""  
+                        currentCoordinate = currentCoordinate + line[index]
+                #print(currentCoordinate)
                 if not ecnountedclosingbracket:
                     raise Exception("Error: bad input5")
+                numberofspaces = re.findall("\s+", currentCoordinate)
+                counter = 0
+                for index in range(len(numberofspaces)):
+                    for space in numberofspaces[index]:
+                        counter = counter +1
                 currentCoordinate = re.sub(r"\s+", '', currentCoordinate)
                 coordinateMatch = re.findall("^(-?[0-9]+),(-?[0-9]+)$", currentCoordinate)
                 if len(coordinateMatch) != 1:
@@ -467,7 +483,9 @@ def parseLine(line):
                 firstNum = int(coordinateMatch[0][0])
                 secondNum = int(coordinateMatch[0][1])
                 tuples.append((firstNum, secondNum))
-                line = line[len(currentCoordinate):]
+                #print(len(currentCoordinate))
+                line = line[len(currentCoordinate)+counter:]
+                #print(line)
             if len(tuples) < 2:
                 raise Exception("Error: bad input6")
         #print(command)
@@ -507,7 +525,10 @@ def parseLine(line):
             raise Exception("Error: bad input2")
 
     else:
-        raise Exception("Error: bad input")                   
+        raise Exception("Error: bad input")  
+    #print(command)
+    #print(streetName)
+    #print(tuples)                 
     return command, streetName, tuples
 class Graph(object):
     def __init__(self,database, Vertex, E):
@@ -607,9 +628,8 @@ def main():
                     for j in range(i+1,len(c)):
                         if (c[i][0] == c[j][1]) and (c[i][1] == c[j][0]):
                             d.append(c[i])
-
+                 # https://www.geeksforgeeks.org/python-remove-all-values-from-a-list-present-in-other-list/
                 c = [x for x in c if x not in d]
-                #https://www.geeksforgeeks.org/python-remove-all-values-from-a-list-present-in-other-list/
                 print("E = {")
                 for values in c:
                     print("  <{0},{1}>".format(values[0],values[1]))
