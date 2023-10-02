@@ -617,10 +617,7 @@ def main():
                     v1 = "{0:.2f}".format(value[0])
                     v2 = "{0:.2f}".format(value[1])
                     #formatted_value = (v1,v2)
-                    if (int(key)) < 10:
-                        print(f'  {int(key)}  ({v1},{v2})')
-                    else:
-                        print(f'  {int(key)}  ({v1},{v2})')
+                    print(f'  {int(key)}:  ({v1},{v2})')
                 print("}")
                 c = b.generate_outputEdge()
                 d = []
@@ -631,8 +628,11 @@ def main():
                  # https://www.geeksforgeeks.org/python-remove-all-values-from-a-list-present-in-other-list/
                 c = [x for x in c if x not in d]
                 print("E = {")
-                for values in c:
-                    print("  <{0},{1}>".format(values[0],values[1]))
+                for index in range(len(c)):
+                    if (index != len(c)-1):
+                        print("  <{0},{1}>,".format(c[index][0],c[index][1]))
+                    else:
+                        print("  <{0},{1}>".format(c[index][0],c[index][1]))
                 print("}")
         except Exception as e:
             print('Error: ' + str(e), file=sys.stderr) 
