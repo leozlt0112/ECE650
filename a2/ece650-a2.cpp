@@ -22,11 +22,11 @@ public:
     int graph_source;
     int graph_destination;
     string error_message;
-    graphs(std::vector<std::vector<int>> new_edges, int num_vertexes)
+    graphs(int num_vertexes)
     {
-        edges = new_edges;
-        // graph_source = source1;
-        // graph_destination = destination1;
+        // edges = new_edges;
+        //  graph_source = source1;
+        //  graph_destination = destination1;
         vertexes = num_vertexes;
         distances.clear();
         predecessor.clear();
@@ -37,7 +37,7 @@ public:
             distances[i] = INT_MAX;
         }
     }
-    void set(std::vector<std::tuple<int, int>> edge_vector_a)
+    bool set(std::vector<std::tuple<int, int>> edge_vector_a)
     {
         int limit = vertexes * vertexes;
         edges.clear();
@@ -46,9 +46,19 @@ public:
         {
             int x = get<0>(*i);
             int y = get<1>(*i);
+            if (x == 0 || x > vertexes || y == 0 || y > vertexes)
+            {
+                return false;
+            }
+        }
+        for (auto i = edge_vector_a.begin(); i != edge_vector_a.end(); ++i)
+        {
+            int x = get<0>(*i);
+            int y = get<1>(*i);
             edges[x].push_back(y);
             edges[y].push_back(x);
         }
+        return true;
     }
     bool bfs_distances(int source1, int destination1)
     {
@@ -111,7 +121,7 @@ public:
                 }
             }
         }
-        if (path_exists = false)
+        if (path_exists == false)
         {
             error_message = "Error: no path";
             return false;
@@ -152,7 +162,9 @@ int num_vertexes;
 int source;
 int destination;
 char previous = '\0';
-void parse_line(std::string line2)
+string error_message_e = "";
+
+void parse_line(std::string line2, bool first)
 {
     std::istringstream input(line2);
 
@@ -163,7 +175,7 @@ void parse_line(std::string line2)
     }
     else if (cmd == 'E')
     {
-        if (previous != 'E')
+        if (first)
         {
             // nums_edges.resize((num_vertexes * num_vertexes));
             edge_vector.clear();
@@ -237,7 +249,9 @@ void parse_line(std::string line2)
 int main(int argc, char **argv)
 {
     std::vector<std::vector<int>> edges2;
-    char previous2;
+    char previous2 = '\0';
+    bool first = true;
+    // bool previous_E_errneous = false;
     while (!std::cin.eof())
     {
         std::string line2;
@@ -249,29 +263,30 @@ int main(int argc, char **argv)
         }
         else
         {
-            parse_line(line2);
+            parse_line(line2, first);
+            if (cmd == 'E')
+            {
+                first = false;
+            }
             if (cmd == 's')
             {
-                graphs a(edges2, num_vertexes);
+                graphs a(num_vertexes);
                 a.set(edge_vector);
-                edges2 = a.edges;
+                // edges2 = a.edges;
                 if (source == destination)
                 {
+                    if (a.set(edge_vector) == false)
+                    {
+                        std::cerr << "Error: graph do not exist "
+                                  << "\n";
+                        continue;
+                    }
                     if (source > 0 && source <= num_vertexes)
                     {
                         cout << source << "-" << destination << "\n";
                         continue;
                     }
                 }
-                /*
-                for (int i = 0; i < edges2.size(); ++i)
-                {
-                    for (int j = 0; j < edges2[i].size(); ++j)
-                    {
-                        cout << edges2[i][j] << "\n";
-                    }
-                }
-                */
                 bool returned = a.bfs_distances(source, destination);
                 if (returned == false)
                 {
@@ -280,6 +295,7 @@ int main(int argc, char **argv)
                 else
                 {
                     a.print_predessor();
+                    first = true;
                 }
             }
             else if (cmd == 'E')
@@ -288,30 +304,27 @@ int main(int argc, char **argv)
                 {
                     continue;
                 }
-                graphs a(edges2, num_vertexes);
-                a.set(edge_vector);
-                edges2 = a.edges;
-                for (auto i = edges2.begin(); i != edges2.end(); ++i)
+                graphs a(num_vertexes);
+                if (a.set(edge_vector) == false)
                 {
-                    for (auto j = i->begin(); j != i->end(); ++j)
-                    {
-                        if (*j > num_vertexes || *j <= 0)
-                        {
-                            string error_message = "Error: edge was above max vertexes allowed or below equal to 0";
-                            std::cerr << "Error: " << error_message << "\n";
-                            break;
-                        }
-                    }
+                    error_message_e = "Error: edge was above max vertexes allowed or below equal to 0";
+                    std::cerr << "Error: " << error_message_e << "\n";
+                    //  previous_E_errneous = true;
+                    goto jump;
                 }
+                // edges2 = a.edges;
+                //  previous_E_errneous = false;
             }
             else if (cmd == 'V')
             {
-                if (num_vertexes <= 0)
+                if (num_vertexes <= 1)
                 {
                     string error_message = "Error: vertexes below or equal 0";
                     std::cerr << "Error: " << error_message << "\n";
                 }
+                first = true;
             }
+        jump:
             previous2 = cmd;
         }
     }
