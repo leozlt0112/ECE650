@@ -32,7 +32,7 @@ public:
         predecessor.clear();
         distances.resize(num_vertexes);
         predecessor.resize(num_vertexes + 1);
-        for (int i = 0; i < distances.size(); ++i)
+        for (long unsigned int i = 0; i < distances.size(); ++i)
         {
             distances[i] = INT_MAX;
         }
@@ -91,14 +91,14 @@ public:
             return false;
         }
         bool path_exists = false;
-        bool visted_vertex[vertexes];
-        for (int i = 0; i < vertexes; ++i)
-        {
-            visted_vertex[i] = false;
-        }
+        // bool visted_vertex[vertexes];
+        // for (int i = 0; i < vertexes; ++i)
+        // {
+        //     visted_vertex[i] = false;
+        //  }
 
         distances[graph_source - 1] = 0;
-        visted_vertex[graph_source - 1] = true;
+        //  visted_vertex[graph_source - 1] = true;
         bfs_queue.clear();
         bfs_queue.push_back(graph_source);
 
@@ -108,12 +108,12 @@ public:
             bfs_queue.pop_front();
             for (auto i = edges[u].begin(); i != edges[u].end(); ++i)
             {
-                if (visted_vertex[*i - 1] == false)
+                if (distances[*i - 1] == INT_MAX)
                 {
                     distances[*i - 1] = distances[u - 1] + 1;
                     predecessor[*i].push_back(u);
                     bfs_queue.push_back(*i);
-                    visted_vertex[*i - 1] = true;
+                    // visted_vertex[*i - 1] = true;
                 }
                 if (*i == graph_destination)
                 {
@@ -194,7 +194,7 @@ void parse_line(std::string line2, bool first)
                         std::string num2("");
                         // please check the case
                         num1.push_back(line2[0]);
-                        for (int i = 1; i < line2.size(); i++)
+                        for (long unsigned int i = 1; i < line2.size(); i++)
                         {
                             if (isdigit(line2[i]))
                             {
@@ -209,7 +209,7 @@ void parse_line(std::string line2, bool first)
                         if (isdigit(line2[0]))
                         {
                             num2.push_back(line2[0]);
-                            for (int i = 1; i < line2.size(); i++)
+                            for (long unsigned int i = 1; i < line2.size(); i++)
                             {
                                 if (isdigit(line2[i]))
                                 {
