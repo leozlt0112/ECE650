@@ -7,7 +7,7 @@
 #include <list>
 #include <climits>
 #include <string>
-using namespace std;
+// using namespace std;
 
 class graphs
 {
@@ -15,11 +15,11 @@ public:
     std::vector<std::vector<int>> edges;
     int vertexes = 0;
     std::vector<std::vector<int>> predecessor;
-    list<int> bfs_queue;
+    std::list<int> bfs_queue;
     std::vector<int> distances;
     int graph_source;
     int graph_destination;
-    string error_message;
+    std::string error_message;
     graphs(int num_vertexes)
     {
         vertexes = num_vertexes;
@@ -39,8 +39,8 @@ public:
         edges.resize(limit);
         for (auto i = edge_vector_a.begin(); i != edge_vector_a.end(); ++i)
         {
-            int x = get<0>(*i);
-            int y = get<1>(*i);
+            int x = std::get<0>(*i);
+            int y = std::get<1>(*i);
             if (x == 0 || x > vertexes || y == 0 || y > vertexes)
             {
                 return false;
@@ -48,8 +48,8 @@ public:
         }
         for (auto i = edge_vector_a.begin(); i != edge_vector_a.end(); ++i)
         {
-            int x = get<0>(*i);
-            int y = get<1>(*i);
+            int x = std::get<0>(*i);
+            int y = std::get<1>(*i);
             edges[x].push_back(y);
             edges[y].push_back(x);
         }
@@ -142,14 +142,14 @@ public:
         {
             if (i != 0)
             {
-                cout << final_output[i] << "-";
+                std::cout << final_output[i] << "-";
             }
             else
             {
-                cout << final_output[i];
+                std::cout << final_output[i];
             }
         }
-        cout << "\n";
+        std::cout << "\n";
     }
 };
 char cmd;
@@ -157,7 +157,6 @@ std::vector<std::tuple<int, int>> edge_vector;
 int num_vertexes;
 int source;
 int destination;
-string error_message_e = "";
 
 void parse_line(std::string line2, bool first)
 {
@@ -259,25 +258,24 @@ int main(int argc, char **argv)
             {
                 graphs a(num_vertexes);
                 a.set(edge_vector);
-                // edges2 = a.edges;
                 if (source == destination)
                 {
                     if (a.set(edge_vector) == false)
                     {
-                        std::cerr << "Error: graph do not exist "
+                        std::cout << "Error: graph do not exist "
                                   << "\n";
                         continue;
                     }
                     if (source > 0 && source <= num_vertexes)
                     {
-                        cout << source << "-" << destination << "\n";
+                        std::cout << source << "-" << destination << "\n";
                         continue;
                     }
                 }
                 bool returned = a.bfs_distances(source, destination);
                 if (returned == false)
                 {
-                    std::cerr << "Error: " << a.error_message << "\n";
+                    std::cout << "Error: " << a.error_message << "\n";
                 }
                 else
                 {
@@ -294,8 +292,8 @@ int main(int argc, char **argv)
                 graphs a(num_vertexes);
                 if (a.set(edge_vector) == false)
                 {
-                    error_message_e = "Error: edge was above max vertexes allowed or below equal to 0";
-                    std::cerr << "Error: " << error_message_e << "\n";
+                    std::string error_message = "Error: edge was above max vertexes allowed or below equal to 0";
+                    std::cout << "Error: " << error_message << "\n";
                     goto jump;
                 }
             }
@@ -303,8 +301,8 @@ int main(int argc, char **argv)
             {
                 if (num_vertexes <= 1)
                 {
-                    string error_message = "Error: vertexes below or equal 0";
-                    std::cerr << "Error: " << error_message << "\n";
+                    std::string error_message = "Error: vertexes below or equal 0";
+                    std::cout << "Error: " << error_message << "\n";
                 }
                 first = true;
             }
