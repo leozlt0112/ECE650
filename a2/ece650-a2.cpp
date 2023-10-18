@@ -15,8 +15,6 @@ public:
     std::vector<std::vector<int>> edges;
     int vertexes = 0;
     std::vector<std::vector<int>> predecessor;
-    // vertexes goes from 1 to max (1 tp 5)
-    // distances goes from 0 to max-1 (0 to 4)
     list<int> bfs_queue;
     std::vector<int> distances;
     int graph_source;
@@ -24,9 +22,6 @@ public:
     string error_message;
     graphs(int num_vertexes)
     {
-        // edges = new_edges;
-        //  graph_source = source1;
-        //  graph_destination = destination1;
         vertexes = num_vertexes;
         distances.clear();
         predecessor.clear();
@@ -60,10 +55,8 @@ public:
         }
         return true;
     }
-    bool bfs_distances(int source1, int destination1)
+    bool check_for_source_dest(int graph_source, int graph_destination, std::vector<std::vector<int>> edges)
     {
-        graph_source = source1;
-        graph_destination = destination1;
         bool source_exist = false;
         bool dest_exist = false;
         if (graph_source <= 0 || graph_source > vertexes)
@@ -90,15 +83,19 @@ public:
             error_message = "Error source and destination do not exist";
             return false;
         }
+        return true;
+    }
+    bool bfs_distances(int input_source, int input_destination)
+    {
+        graph_source = input_source;
+        graph_destination = input_destination;
+        bool bad_source_or_dest = check_for_source_dest(graph_source, graph_destination, edges);
+        if (bad_source_or_dest == false)
+        {
+            return false;
+        }
         bool path_exists = false;
-        // bool visted_vertex[vertexes];
-        // for (int i = 0; i < vertexes; ++i)
-        // {
-        //     visted_vertex[i] = false;
-        //  }
-
         distances[graph_source - 1] = 0;
-        //  visted_vertex[graph_source - 1] = true;
         bfs_queue.clear();
         bfs_queue.push_back(graph_source);
 
@@ -113,7 +110,6 @@ public:
                     distances[*i - 1] = distances[u - 1] + 1;
                     predecessor[*i].push_back(u);
                     bfs_queue.push_back(*i);
-                    // visted_vertex[*i - 1] = true;
                 }
                 if (*i == graph_destination)
                 {
@@ -161,7 +157,6 @@ std::vector<std::tuple<int, int>> edge_vector;
 int num_vertexes;
 int source;
 int destination;
-char previous = '\0';
 string error_message_e = "";
 
 void parse_line(std::string line2, bool first)
@@ -177,7 +172,6 @@ void parse_line(std::string line2, bool first)
     {
         if (first)
         {
-            // nums_edges.resize((num_vertexes * num_vertexes));
             edge_vector.clear();
             line2 = line2.substr(3);
             while (line2.size() != 0)
@@ -192,7 +186,6 @@ void parse_line(std::string line2, bool first)
                     {
                         std::string num1("");
                         std::string num2("");
-                        // please check the case
                         num1.push_back(line2[0]);
                         for (long unsigned int i = 1; i < line2.size(); i++)
                         {
@@ -222,13 +215,9 @@ void parse_line(std::string line2, bool first)
                                 }
                             }
                         }
-                        // cout << num1 << "\n";
-                        // cout << num2 << "\n";
                         int x = stoi(num1);
                         int y = stoi(num2);
                         edge_vector.push_back(std::make_tuple(x, y));
-
-                        // line2 = line2.substr(3);
                     }
 
                     else
@@ -244,14 +233,12 @@ void parse_line(std::string line2, bool first)
     {
         input >> source >> destination;
     }
-    previous = cmd;
 }
 int main(int argc, char **argv)
 {
     std::vector<std::vector<int>> edges2;
-    char previous2 = '\0';
+    char previous = '\0';
     bool first = true;
-    // bool previous_E_errneous = false;
     while (!std::cin.eof())
     {
         std::string line2;
@@ -300,7 +287,7 @@ int main(int argc, char **argv)
             }
             else if (cmd == 'E')
             {
-                if (previous2 == 'E')
+                if (previous == 'E')
                 {
                     continue;
                 }
@@ -309,11 +296,8 @@ int main(int argc, char **argv)
                 {
                     error_message_e = "Error: edge was above max vertexes allowed or below equal to 0";
                     std::cerr << "Error: " << error_message_e << "\n";
-                    //  previous_E_errneous = true;
                     goto jump;
                 }
-                // edges2 = a.edges;
-                //  previous_E_errneous = false;
             }
             else if (cmd == 'V')
             {
@@ -325,7 +309,7 @@ int main(int argc, char **argv)
                 first = true;
             }
         jump:
-            previous2 = cmd;
+            previous = cmd;
         }
     }
     return 0;
