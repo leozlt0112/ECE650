@@ -158,9 +158,9 @@ int num_vertexes;
 int source;
 int destination;
 
-void parse_line(std::string line2, bool first)
+void parse_line(std::string input_line, bool first)
 {
-    std::istringstream input(line2);
+    std::istringstream input(input_line);
 
     input >> cmd;
     if (cmd == 'V')
@@ -172,44 +172,44 @@ void parse_line(std::string line2, bool first)
         if (first)
         {
             edge_vector.clear();
-            line2 = line2.substr(3);
-            while (line2.size() != 0)
+            input_line = input_line.substr(3);
+            while (input_line.size() != 0)
             {
-                if (line2[0] == '<' || line2[0] == '>')
+                if (input_line[0] == '<' || input_line[0] == '>')
                 {
-                    line2 = line2.substr(1);
+                    input_line = input_line.substr(1);
                 }
                 else
                 {
-                    if (isdigit(line2[0]))
+                    if (isdigit(input_line[0]))
                     {
                         std::string num1("");
                         std::string num2("");
-                        num1.push_back(line2[0]);
-                        for (long unsigned int i = 1; i < line2.size(); i++)
+                        num1.push_back(input_line[0]);
+                        for (long unsigned int i = 1; i < input_line.size(); i++)
                         {
-                            if (isdigit(line2[i]))
+                            if (isdigit(input_line[i]))
                             {
-                                num1.push_back(line2[i]);
+                                num1.push_back(input_line[i]);
                             }
                             else
                             {
-                                line2 = line2.substr(i + 1);
+                                input_line = input_line.substr(i + 1);
                                 break;
                             }
                         }
-                        if (isdigit(line2[0]))
+                        if (isdigit(input_line[0]))
                         {
-                            num2.push_back(line2[0]);
-                            for (long unsigned int i = 1; i < line2.size(); i++)
+                            num2.push_back(input_line[0]);
+                            for (long unsigned int i = 1; i < input_line.size(); i++)
                             {
-                                if (isdigit(line2[i]))
+                                if (isdigit(input_line[i]))
                                 {
-                                    num2.push_back(line2[i]);
+                                    num2.push_back(input_line[i]);
                                 }
                                 else
                                 {
-                                    line2 = line2.substr(i);
+                                    input_line = input_line.substr(i);
                                     break;
                                 }
                             }
@@ -221,7 +221,7 @@ void parse_line(std::string line2, bool first)
 
                     else
                     {
-                        line2 = line2.substr(1);
+                        input_line = input_line.substr(1);
                     }
                 }
             }
@@ -235,21 +235,21 @@ void parse_line(std::string line2, bool first)
 }
 int main(int argc, char **argv)
 {
-    std::vector<std::vector<int>> edges2;
+    // std::vector<std::vector<int>> edges2;
     char previous = '\0';
     bool first = true;
     while (!std::cin.eof())
     {
-        std::string line2;
-        std::getline(std::cin, line2);
+        std::string input_line;
+        std::getline(std::cin, input_line);
 
-        if (line2.size() == 0)
+        if (input_line.size() == 0)
         {
             continue;
         }
         else
         {
-            parse_line(line2, first);
+            parse_line(input_line, first);
             if (cmd == 'E')
             {
                 first = false;
@@ -268,7 +268,7 @@ int main(int argc, char **argv)
                     }
                     if (source > 0 && source <= num_vertexes)
                     {
-                        std::cout << source << "-" << destination << "\n";
+                        std::cout << source << "\n";
                         continue;
                     }
                 }
