@@ -58,26 +58,26 @@ int main(int argc, char **argv)
             {
                 cint_value = 20;
                 std::cout << "Unknown " << cint_value << "\n";
-                break;
             }
             else if (optopt == 's')
             {
                 sint_value = 10;
                 std::cout << "Unknown " << sint_value << "\n";
-                break;
             }
             else if (optopt == 'l')
             {
                 lint_value = 5;
                 std::cout << "Unknown " << lint_value << "\n";
-                break;
             }
             else if (optopt == 'n')
             {
                 nint_value = 5;
                 std::cout << "Unknown " << nint_value << "\n";
-                break;
             }
+            break;
+        default:
+            std::cout << "default "
+                      << "\n";
         }
     }
     std::cout << sint_value << " " << lint_value << " " << cint_value << " " << nint_value << " " << std::endl;
