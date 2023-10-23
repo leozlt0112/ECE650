@@ -25,11 +25,16 @@ int main(int argc, char **argv)
 {
     // expected options are '-a', '-b', and '-c value'
     std::string svalue;
-    int sint_value;
+    int sint_value = 10;
     std::string lvalue;
-    int lint_value;
+    int lint_value = 5;
+    std::string nvalue;
+    int nint_value = 5;
+    std::string cvalue;
+    int cint_value = 20;
     int c;
-    while ((c = getopt(argc, argv, "s:l:")) != -1)
+    while ((c = getopt(argc, argv, "s:l:n:c:")) != -1)
+    {
         switch (c)
         {
         case 's':
@@ -40,7 +45,41 @@ int main(int argc, char **argv)
             lvalue = optarg;
             lint_value = atoi(lvalue.c_str());
             break;
+        case 'n':
+            nvalue = optarg;
+            nint_value = atoi(nvalue.c_str());
+            break;
+        case 'c':
+            cvalue = optarg;
+            cint_value = atoi(cvalue.c_str());
+            break;
+        case '?':
+            if (optopt == 'c')
+            {
+                cint_value = 20;
+                std::cout << "Unknown " << cint_value << "\n";
+                break;
+            }
+            else if (optopt == 's')
+            {
+                sint_value = 10;
+                std::cout << "Unknown " << sint_value << "\n";
+                break;
+            }
+            else if (optopt == 'l')
+            {
+                lint_value = 5;
+                std::cout << "Unknown " << lint_value << "\n";
+                break;
+            }
+            else if (optopt == 'n')
+            {
+                nint_value = 5;
+                std::cout << "Unknown " << nint_value << "\n";
+                break;
+            }
         }
-    std::cout << sint_value << lint_value << std::endl;
+    }
+    std::cout << sint_value << " " << lint_value << " " << cint_value << " " << nint_value << " " << std::endl;
     return 0;
 }
