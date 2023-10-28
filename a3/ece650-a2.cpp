@@ -262,7 +262,7 @@ int main(int argc, char **argv)
                 {
                     if (a.set(edge_vector) == false)
                     {
-                        std::cout << "Error: graph do not exist "
+                        std::cerr << "Error: graph do not exist "
                                   << "\n";
                         continue;
                     }
@@ -275,7 +275,7 @@ int main(int argc, char **argv)
                 bool returned = a.bfs_distances(source, destination);
                 if (returned == false)
                 {
-                    std::cout << "Error: " << a.error_message << "\n";
+                    std::cerr << "Error: " << a.error_message << "\n";
                 }
                 else
                 {
@@ -294,7 +294,7 @@ int main(int argc, char **argv)
                 if (a.set(edge_vector) == false)
                 {
                     std::string error_message = "Error: edge was above max vertexes allowed or below equal to 0";
-                    std::cout << "Error: " << error_message << "\n";
+                    std::cerr << "Error: " << error_message << "\n";
                     goto jump;
                 }
             }
@@ -304,7 +304,7 @@ int main(int argc, char **argv)
                 if (num_vertexes <= 1)
                 {
                     std::string error_message = "Error: vertexes below or equal 0";
-                    std::cout << "Error: " << error_message << "\n";
+                    std::cerr << "Error: " << error_message << "\n";
                 }
                 first = true;
             }
