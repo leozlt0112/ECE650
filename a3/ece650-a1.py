@@ -612,14 +612,14 @@ def main():
                 #print("new edges", E2)
                 #graphs = Graph(database,V)
                 d = b.generate_outputvertex()
-                #print("V = {")
+                length = len(d)
+                print('V {}'.format(length))
                 #for key,value in d.items():
-                #    v1 = "{0:.2f}".format(value[0])
-                #    v2 = "{0:.2f}".format(value[1])
-                #    #formatted_value = (v1,v2)
-                #    print(f'  {int(key)}:  ({v1},{v2})')
+                 #   v1 = "{0:.2f}".format(value[0])
+                  #  v2 = "{0:.2f}".format(value[1])
+                    #formatted_value = (v1,v2)
+                   # print(f'  {int(key)}:  ({v1},{v2})')
                 #print("}")
-                print("V", len(d.keys()))
                 c = b.generate_outputEdge()
                 d = []
                 for i in range(len(c)):
@@ -628,12 +628,12 @@ def main():
                             d.append(c[i])
                  # https://www.geeksforgeeks.org/python-remove-all-values-from-a-list-present-in-other-list/
                 c = [x for x in c if x not in d]
-                print("E {", end="")
+                print("E = {", end='')
                 for index in range(len(c)):
                     if (index != len(c)-1):
-                        print("<{0},{1}>,".format(c[index][0],c[index][1]), end="")
+                        print("<{0},{1}>,".format(c[index][0],c[index][1]),end='')
                     else:
-                        print("<{0},{1}>".format(c[index][0],c[index][1]), end="")
+                        print("<{0},{1}>".format(c[index][0],c[index][1]),end='')
                 print("}")
         except Exception as e:
             print('Error: ' + str(e), file=sys.stderr) 
