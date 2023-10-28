@@ -6,7 +6,14 @@
 #include <sys/types.h>
 #include <fcntl.h>
 #include <unistd.h>
-bool genrate_random_num(int *rand_num, int max, int min, std::string failed)
+#include <vector>
+#include <ctype.h>
+#include <tuple> // for tuple
+#include <list>
+#include <climits>
+#include <string>
+#include <map>
+bool genrate_random_num(int *rand_num, int min, int max, std::string &failed)
 {
     std::ifstream urandom("/dev/urandom");
     if (urandom.fail())
@@ -16,9 +23,378 @@ bool genrate_random_num(int *rand_num, int max, int min, std::string failed)
     }
     unsigned int num;
     urandom.read(reinterpret_cast<char *>(&num), sizeof(int));
-    std::cout << num << "\n";
-    num = min + (num % ((max) - (min) + 1));
+    // std::cout << num << "\n";
+    num = min + num % (max - min + 1);
     *rand_num = num;
+    return true;
+}
+class new_graphs
+{
+public:
+    std::multimap<std::string, std::tuple<int, int>> myMultimap;
+    new_graphs()
+    {
+        myMultimap.clear();
+        // myStreets_Segments.clear();
+    }
+    void print()
+    {
+        for (auto keyIt = myMultimap.begin(); keyIt != myMultimap.end();)
+        {
+            const std::string key = keyIt->first;
+
+            // std::cout << "Key: " << key << " -> ";
+
+            // Iterate through the associated tuples for the same key
+            while (keyIt->first == key && keyIt != myMultimap.end())
+            {
+                const std::tuple<int, int> &value = keyIt->second;
+                // std::cout << std::get<0>(value) << " " << std::get<1>(value) << ", ";
+                keyIt++;
+            }
+
+            // std::cout << std::endl;
+        }
+    }
+};
+bool check_if_same_pts(new_graphs &a1, std::tuple<int, int> my_tuple, std::string street_name, int curr)
+{
+    if (curr < 1)
+    {
+        return false;
+    }
+    auto range = a1.myMultimap.equal_range(street_name);
+    for (auto itr = range.first; itr != range.second; ++itr)
+    {
+        int x0 = std::get<0>(itr->second);
+        int y0 = std::get<1>(itr->second);
+        if (x0 == std::get<0>(my_tuple) && y0 == std::get<1>(my_tuple))
+        {
+            return true;
+        }
+    }
+    return false;
+}
+// curr_num_line_segments the number of pts currently in the graph rn
+bool check_two_lines_parallel_and_overlap(int existing_x0, int existing_y0, int existing_x1, int existing_y1,
+                                          int new_x0, int new_y0, int new_x1, int new_y1, bool is_vertical_new_segment, bool is_vertical_existing)
+{
+    if (is_vertical_new_segment && is_vertical_existing)
+    {
+        if (existing_x0 == existing_x1 && existing_x0 == new_x1)
+        {
+            if ((new_y0 >= existing_y1) || (existing_y0 >= new_y1))
+            {
+                return false;
+            }
+        }
+    }
+    else
+    {
+        if (is_vertical_new_segment || is_vertical_existing)
+        {
+            return false;
+        }
+        double rise_existing = existing_y1 - existing_y0;
+        double run_existing = existing_x1 - existing_x0;
+        double rise_new = new_y1 - new_y0;
+        double run_new = new_x1 - new_x0;
+        double slope_existing = (double)rise_existing / run_existing;
+        double slope_new = (double)rise_new / run_new;
+        if (slope_existing != slope_new)
+        {
+            return false;
+        }
+        else
+        {
+            if ((new_y0 >= existing_y1) || (existing_y0 >= new_y1))
+            {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+bool check_if_overlap(int curr_num_line_segments, new_graphs &a1, std::tuple<int, int> my_tuple, std::string key)
+{
+    if (curr_num_line_segments <= 1)
+    {
+        return false;
+    }
+    auto range = a1.myMultimap.equal_range(key);
+    int graph_src_x;
+    int graph_src_y;
+    int new_vector_x = std::get<0>(my_tuple);
+    int new_vector_y = std::get<1>(my_tuple);
+    int new_segment_src_x;
+    int new_segment_src_y;
+    int new_segment_dst_x;
+    int new_segment_dst_y;
+    if (range.first != a1.myMultimap.end())
+    {
+        // Set 'last' to the first element of the range to start
+        auto last = range.first;
+
+        // Iterate through the range, updating 'last' as we go
+        for (auto it = range.first; it != range.second; ++it)
+        {
+            last = it;
+        }
+        graph_src_x = std::get<0>(last->second);
+        graph_src_y = std::get<1>(last->second);
+    }
+    else
+    {
+        // std::cout << "There is a problem with multimap, checklogic"
+        //         << "\n";
+    }
+    bool is_vertical_new_segment = false;
+    // dw about vertical line rn
+    if (graph_src_x != new_vector_x)
+    {
+
+        if (graph_src_y == new_vector_y)
+        {
+            if (graph_src_x <= new_vector_x)
+            {
+                new_segment_src_x = graph_src_x;
+                new_segment_src_y = graph_src_y;
+                new_segment_dst_x = new_vector_x;
+                new_segment_dst_y = new_vector_y;
+            }
+            else
+            {
+                new_segment_src_x = new_vector_x;
+                new_segment_src_y = new_vector_y;
+                new_segment_dst_x = graph_src_x;
+                new_segment_dst_y = graph_src_y;
+            }
+        }
+        else
+        {
+            if (graph_src_x <= new_vector_x)
+            {
+                if (graph_src_y <= new_vector_y)
+                {
+                    new_segment_src_x = graph_src_x;
+                    new_segment_src_y = graph_src_y;
+                    new_segment_dst_x = new_vector_x;
+                    new_segment_dst_y = new_vector_y;
+                }
+                else
+                {
+                    new_segment_src_x = new_vector_x;
+                    new_segment_src_y = new_vector_y;
+                    new_segment_dst_x = graph_src_x;
+                    new_segment_dst_y = graph_src_y;
+                }
+            }
+            else
+            {
+                if (graph_src_y <= new_vector_y)
+                {
+                    new_segment_src_x = graph_src_x;
+                    new_segment_src_y = graph_src_y;
+                    new_segment_dst_x = new_vector_x;
+                    new_segment_dst_y = new_vector_y;
+                }
+                else
+                {
+                    new_segment_src_x = new_vector_x;
+                    new_segment_src_y = new_vector_y;
+                    new_segment_dst_x = graph_src_x;
+                    new_segment_dst_y = graph_src_y;
+                }
+            }
+        }
+    }
+    //
+    else
+    {
+        is_vertical_new_segment = true;
+        if (graph_src_y <= new_vector_y)
+        {
+            new_segment_src_x = graph_src_x;
+            new_segment_src_y = graph_src_y;
+            new_segment_dst_x = new_vector_x;
+            new_segment_dst_y = new_vector_y;
+        }
+        else
+        {
+            new_segment_src_x = new_vector_x;
+            new_segment_src_y = new_vector_y;
+            new_segment_dst_x = graph_src_x;
+            new_segment_dst_y = graph_src_y;
+        }
+    }
+
+    int graph_existing_src_x;
+    int graph_existing_src_y;
+    int graph_existing_dst_x;
+    int graph_existing_dst_y;
+    std::string my_key = "";
+    for (auto i = a1.myMultimap.begin(); i != a1.myMultimap.end(); ++i)
+    {
+        std::string currentKey = i->first;
+        // auto next = std::next(i);
+        if (currentKey != my_key)
+        {
+            my_key = currentKey;
+            auto it = a1.myMultimap.equal_range(my_key);
+            // std::cout << "Current key  " << it.first->first << std::endl;
+            for (auto itr = it.first; itr != it.second; ++itr)
+            {
+                bool is_vertical_existing = false;
+                if (std::next(itr) != it.second)
+                {
+                    auto next_it = std::next(itr);
+                    int x0 = std::get<0>(itr->second);
+                    int y0 = std::get<1>(itr->second);
+                    int x1 = std::get<0>(next_it->second);
+                    int y1 = std::get<1>(next_it->second);
+                    if (x0 == x1)
+                    {
+                        is_vertical_existing = true;
+                        if (y0 <= y1)
+                        {
+                            graph_existing_src_x = x0;
+                            graph_existing_src_y = y0;
+                            graph_existing_dst_x = x1;
+                            graph_existing_dst_y = y1;
+                        }
+                        else
+                        {
+                            graph_existing_src_x = x0;
+                            graph_existing_src_y = y0;
+                            graph_existing_dst_x = x1;
+                            graph_existing_dst_y = y1;
+                        }
+                        bool if_vertical_overlap = check_two_lines_parallel_and_overlap(graph_existing_src_x, graph_existing_src_y, graph_existing_dst_x, graph_existing_dst_y,
+                                                                                        new_segment_src_x, new_segment_src_y, new_segment_dst_x, new_segment_dst_y, is_vertical_new_segment, is_vertical_existing);
+                        if (if_vertical_overlap)
+                        {
+                            return true;
+                        }
+                    }
+                    else
+                    {
+                        if (y0 == y1)
+                        {
+                            if (x0 <= x1)
+                            {
+                                graph_existing_src_x = x0;
+                                graph_existing_src_y = y0;
+                                graph_existing_dst_x = x1;
+                                graph_existing_dst_y = y1;
+                            }
+                            else
+                            {
+                                graph_existing_src_x = x1;
+                                graph_existing_src_y = y1;
+                                graph_existing_dst_x = x0;
+                                graph_existing_dst_y = y0;
+                            }
+                            bool if_horizontal_overlap = check_two_lines_parallel_and_overlap(graph_existing_src_x, graph_existing_src_y, graph_existing_dst_x, graph_existing_dst_y,
+                                                                                              new_segment_src_x, new_segment_src_y, new_segment_dst_x, new_segment_dst_y, is_vertical_new_segment, is_vertical_existing);
+                            if (if_horizontal_overlap)
+                            {
+                                return true;
+                            }
+                        }
+                        else
+                        {
+                            if (x0 <= x1)
+                            {
+                                if (y0 <= y1)
+                                {
+                                    graph_existing_src_x = x0;
+                                    graph_existing_src_y = y0;
+                                    graph_existing_dst_x = x1;
+                                    graph_existing_dst_y = y1;
+                                }
+                                else
+                                {
+                                    graph_existing_src_x = x1;
+                                    graph_existing_src_y = y1;
+                                    graph_existing_dst_x = x0;
+                                    graph_existing_dst_y = y0;
+                                }
+                            }
+                            else
+                            {
+                                if (y0 <= y1)
+                                {
+                                    graph_existing_src_x = x0;
+                                    graph_existing_src_y = y0;
+                                    graph_existing_dst_x = x1;
+                                    graph_existing_dst_y = y1;
+                                }
+                                else
+                                {
+                                    graph_existing_src_x = x1;
+                                    graph_existing_src_y = y1;
+                                    graph_existing_dst_x = x0;
+                                    graph_existing_dst_y = y0;
+                                }
+                            }
+                            bool if_overlap = check_two_lines_parallel_and_overlap(graph_existing_src_x, graph_existing_src_y, graph_existing_dst_x, graph_existing_dst_y,
+                                                                                   new_segment_src_x, new_segment_src_y, new_segment_dst_x, new_segment_dst_y, is_vertical_new_segment, is_vertical_existing);
+                            if (if_overlap)
+                            {
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return false;
+}
+bool generate_random_char(std::string &street_name, std::string &error_message)
+{
+    // std::string error_message;
+
+    char alphabet[26] = {'a', 'b', 'c', 'd', 'e', 'f', 'g',
+                         'h', 'i', 'j', 'k', 'l', 'm', 'n',
+                         'o', 'p', 'q', 'r', 's', 't', 'u',
+                         'v', 'w', 'x', 'y', 'z'};
+    char s1;
+    int returned_num;
+    bool returned = genrate_random_num(&returned_num, 0, 25, error_message);
+    if (returned == false)
+    {
+        return false;
+    }
+    s1 = alphabet[returned_num];
+    street_name.append(1, s1);
+
+    char s2;
+    returned = genrate_random_num(&returned_num, 0, 25, error_message);
+    if (returned == false)
+    {
+        return false;
+    }
+    s2 = alphabet[returned_num];
+    street_name += s2;
+
+    char s3;
+    returned = genrate_random_num(&returned_num, 0, 25, error_message);
+    if (returned == false)
+    {
+        return false;
+    }
+    s3 = alphabet[returned_num];
+    street_name += s3;
+
+    char s4;
+    returned = genrate_random_num(&returned_num, 0, 25, error_message);
+    if (returned == false)
+    {
+        return false;
+    }
+    s4 = alphabet[returned_num];
+    street_name += s4;
     return true;
 }
 int main(int argc, char **argv)
@@ -33,53 +409,248 @@ int main(int argc, char **argv)
     std::string cvalue;
     int cint_value = 20;
     int c;
-    while ((c = getopt(argc, argv, "s:l:n:c:")) != -1)
+    int num_streets;
+    int num_line_segments;
+    int num_wait;
+    int x_y_range;
+    while ((c = getopt(argc, argv, "s:n:l:c:")) != -1)
     {
-        switch (c)
+        // std::cout << c << std::endl;
+        // std::cout << (char)(c) << std::endl;
+        if (c == 's')
         {
-        case 's':
             svalue = optarg;
             sint_value = atoi(svalue.c_str());
-            break;
-        case 'l':
+        }
+        else if (c == 'l')
+        {
             lvalue = optarg;
             lint_value = atoi(lvalue.c_str());
-            break;
-        case 'n':
+        }
+        else if (c == 'n')
+        {
             nvalue = optarg;
             nint_value = atoi(nvalue.c_str());
-            break;
-        case 'c':
+        }
+        else if (c == 'c')
+        {
             cvalue = optarg;
             cint_value = atoi(cvalue.c_str());
-            break;
-        case '?':
-            if (optopt == 'c')
-            {
-                cint_value = 20;
-                std::cout << "Unknown " << cint_value << "\n";
-            }
-            else if (optopt == 's')
-            {
-                sint_value = 10;
-                std::cout << "Unknown " << sint_value << "\n";
-            }
-            else if (optopt == 'l')
-            {
-                lint_value = 5;
-                std::cout << "Unknown " << lint_value << "\n";
-            }
-            else if (optopt == 'n')
-            {
-                nint_value = 5;
-                std::cout << "Unknown " << nint_value << "\n";
-            }
-            break;
-        default:
-            std::cout << "default "
-                      << "\n";
         }
     }
-    std::cout << sint_value << " " << lint_value << " " << cint_value << " " << nint_value << " " << std::endl;
+    x_y_range = cint_value;
+    // std::cout << "s   " << sint_value << "l   " << lint_value << "c   " << cint_value << "n   " << nint_value << std::endl;
+    //  while (1)
+    //{
+    std::string failed_message;
+    // std::cout << "My sint " << sint_value << std::endl;
+    bool results = genrate_random_num(&num_streets, 2, sint_value, failed_message);
+    if (!results)
+    {
+        std::cerr << "Error: " << failed_message << std::endl;
+    }
+    // std::cout << "My num streets " << num_streets << std::endl;
+    //  for now for num of line segments is the same
+    results = genrate_random_num(&num_line_segments, 1, nint_value, failed_message);
+    if (!results)
+    {
+        std::cerr << "Error: " << failed_message << std::endl;
+    }
+    // std::cout << "My num line_segments " << num_line_segments << std::endl;
+    //  generate wait seconds
+    results = genrate_random_num(&num_wait, 5, lint_value, failed_message);
+    if (!results)
+    {
+        std::cerr << "Error: " << failed_message << std::endl;
+    }
+    // std::cout << "My number of wait seconds" << num_wait << std::endl;
+    // missing code for generating x,y coordinates
+    int curr_num_streets = 0;
+    int failed_attempt = 0;
+    new_graphs a1;
+    int curr_num_line_segments = 0;
+    // bool failed = false;
+    while (1)
+    {
+        while (curr_num_streets < num_streets)
+        {
+            std::string street_name;
+            std::string error_message;
+            bool no_fail = generate_random_char(street_name, error_message);
+            if (no_fail == false)
+            {
+                std::cerr << "Error: " << error_message << std::endl;
+
+                goto end;
+            }
+            if (a1.myMultimap.empty())
+            {
+                // a1.myMultimap.push_back(std::string(1, c));
+                while (curr_num_line_segments < (num_line_segments + 1))
+                {
+                    if (failed_attempt == 25)
+                    {
+                        std::cerr << "Error: failed to generate valid input for 25 simultaneous attempts" << std::endl;
+                        // failed = true;
+                        return 1;
+                    }
+                    int a;
+                    int b;
+                    results = genrate_random_num(&a, -1 * x_y_range, x_y_range, failed_message);
+                    if (results == false)
+                    {
+                        std::cerr << "Error: " << error_message << std::endl;
+                        continue;
+                    }
+                    results = genrate_random_num(&b, -1 * x_y_range, x_y_range, failed_message);
+                    if (results == false)
+                    {
+                        std::cerr << "Error: " << error_message << std::endl;
+                        // goto end_of_while;
+                        continue;
+                    }
+                    std::tuple<int, int> my_tuple = std::make_tuple(a, b);
+                    bool if_same_pts = check_if_same_pts(a1, my_tuple, street_name, curr_num_line_segments);
+                    if (if_same_pts)
+                    {
+                        // You should include some code here before using 'goto'
+                        failed_attempt++;
+                        // goto end_of_while;
+                        continue;
+                    }
+
+                    bool if_overlap = check_if_overlap(curr_num_line_segments, a1, my_tuple, street_name);
+                    if (if_overlap)
+                    {
+                        failed_attempt++;
+                        goto end_of_while;
+                    }
+                    // a1.myStreets_Segments.push_back(my_tuple);
+                    // bool check_if_overlap(a1, my_tuple);
+                    a1.myMultimap.insert(std::make_pair(street_name, my_tuple));
+
+                    curr_num_line_segments++;
+
+                end_of_while:;
+                }
+                //}
+
+                curr_num_line_segments = 0;
+                curr_num_streets++;
+            }
+            else
+            {
+                bool repeated = true;
+                while (repeated)
+                {
+                    if (failed_attempt == 25)
+                    {
+                        std::cerr << "Error: failed to generate valid input for 25 simultaneous attempts" << std::endl;
+                        return 1;
+                    }
+                    for (auto keyIt = a1.myMultimap.begin(); keyIt != a1.myMultimap.end(); keyIt++)
+                    {
+                        const std::string key = keyIt->first;
+                        if (street_name == key)
+                        {
+                            repeated = true;
+                            generate_random_char(street_name, error_message);
+                            failed_attempt++;
+                            goto end_of_repeated;
+                        }
+                    }
+                    repeated = false;
+                    if (!repeated)
+                    {
+                        while (curr_num_line_segments < num_line_segments + 1)
+                        {
+                            if (failed_attempt == 25)
+                            {
+                                std::cerr << "Error: failed to generate valid input for 25 simultaneous attempts" << std::endl;
+                                return 1;
+                            }
+                            int a;
+                            int b;
+                            results = genrate_random_num(&a, -1 * x_y_range, x_y_range, failed_message);
+                            if (results == false)
+                            {
+                                std::cerr << "Error: " << error_message << std::endl;
+                                goto end_of_repeated;
+                            }
+                            results = genrate_random_num(&b, -1 * x_y_range, x_y_range, failed_message);
+                            if (results == false)
+                            {
+                                std::cerr << "Error: " << error_message << std::endl;
+                                goto end_of_repeated;
+                            }
+                            std::tuple<int, int> my_tuple = std::make_tuple(a, b);
+                            // a1.myStreets_Segments.push_back(my_tuple);
+                            bool if_same_pts = check_if_same_pts(a1, my_tuple, street_name, curr_num_line_segments);
+                            if (if_same_pts)
+                            {
+                                // You should include some code here before using 'goto'
+                                failed_attempt++;
+                                // goto end_of_repeated;
+                                continue;
+                            }
+                            bool if_overlap = check_if_overlap(curr_num_line_segments, a1, my_tuple, street_name);
+                            if (if_overlap)
+                            {
+                                failed_attempt++;
+                                // goto end_of_repeated;
+                                continue;
+                            }
+                            a1.myMultimap.insert(std::make_pair(street_name, my_tuple));
+                            curr_num_line_segments++;
+                        }
+                        curr_num_line_segments = 0;
+                    }
+                end_of_repeated:;
+                }
+                curr_num_streets++;
+            }
+            // curr_num_streets++;
+        end:;
+        }
+        // for ()
+        std::string my_key = "";
+        for (auto i = a1.myMultimap.begin(); i != a1.myMultimap.end(); ++i)
+        {
+            std::string currentKey = i->first;
+            if (currentKey != my_key)
+            {
+                my_key = currentKey;
+                std::cout << "add "
+                          << "\"" << my_key << "\""
+                          << " ";
+                auto range = a1.myMultimap.equal_range(my_key);
+                for (auto itr = range.first; itr != range.second; ++itr)
+                {
+                    std::cout << "(" << std::get<0>(itr->second);
+                    std::cout << "," << std::get<1>(itr->second) << ") ";
+                }
+                std::cout << "\n";
+            }
+        }
+        std::cout << "gg"
+                  << "\n";
+        sleep(num_wait);
+        for (auto i = a1.myMultimap.begin(); i != a1.myMultimap.end(); ++i)
+        {
+            std::string currentKey = i->first;
+            if (currentKey != my_key)
+            {
+                my_key = currentKey;
+                std::cout << "rm "
+                          << "\"" << my_key << "\""
+                          << "\n";
+            }
+        }
+        a1.myMultimap.clear();
+        curr_num_streets = 0;
+    }
+    // a1.print();
+    //  }
+    // end:
     return 0;
 }
