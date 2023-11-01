@@ -38,25 +38,6 @@ public:
         myMultimap.clear();
         // myStreets_Segments.clear();
     }
-    void print()
-    {
-        for (auto keyIt = myMultimap.begin(); keyIt != myMultimap.end();)
-        {
-            const std::string key = keyIt->first;
-
-            // std::cout << "Key: " << key << " -> ";
-
-            // Iterate through the associated tuples for the same key
-            while (keyIt->first == key && keyIt != myMultimap.end())
-            {
-                const std::tuple<int, int> &value = keyIt->second;
-                // std::cout << std::get<0>(value) << " " << std::get<1>(value) << ", ";
-                keyIt++;
-            }
-
-            // std::cout << std::endl;
-        }
-    }
 };
 bool check_if_same_pts(new_graphs &a1, std::tuple<int, int> my_tuple, std::string street_name, int curr)
 {
@@ -109,7 +90,7 @@ bool check_two_lines_parallel_and_overlap(int existing_x0, int existing_y0, int 
             if (existing_x0 == new_x0 && existing_x1 == existing_x0)
             {
                 // new completely overlaps existing
-                if (existing_y0 > new_y0 && existing_y1 < new_y1)
+                if (existing_y0 >= new_y0 && existing_y1 <= new_y1)
                 {
                     return true;
                 }
@@ -124,7 +105,7 @@ bool check_two_lines_parallel_and_overlap(int existing_x0, int existing_y0, int 
                     return true;
                 }
                 // existing completely overlaps new
-                if (new_y0 > existing_y0 && new_y1 < existing_y1)
+                if (new_y0 >= existing_y0 && new_y1 <= existing_y1)
                 {
                     return true;
                 }
@@ -146,14 +127,19 @@ bool check_two_lines_parallel_and_overlap(int existing_x0, int existing_y0, int 
             double run_existing = existing_x1 - existing_x0;
             double rise_new = new_y1 - new_y0;
             double run_new = new_x1 - new_x0;
+            if (run_new == 0 || run_existing == 0)
+            {
+                return false;
+            }
             double slope_existing = (double)rise_existing / run_existing;
             double slope_new = (double)rise_new / run_new;
-            if (slope_existing == slope_new)
+            double tolerance = 1e-6;
+            if (abs(slope_existing - slope_new) < tolerance)
             {
                 if (slope_existing >= 0)
                 {
                     // existing completely overlaps new
-                    if ((existing_x0 <= new_x0 && existing_x1 > new_x1) && (existing_y0 <= new_y0 && existing_y1 > new_y1))
+                    if ((existing_x0 <= new_x0 && existing_x1 >= new_x1) && (existing_y0 <= new_y0 && existing_y1 >= new_y1))
                     {
                         bool point1 = if_distance_equal(existing_x0, existing_y0, existing_x1, existing_y1, new_x0, new_y0);
                         bool point2 = if_distance_equal(existing_x0, existing_y0, existing_x1, existing_y1, new_x1, new_y1);
@@ -164,7 +150,7 @@ bool check_two_lines_parallel_and_overlap(int existing_x0, int existing_y0, int 
                     }
                     else
                     {
-                        if ((existing_x0 <= new_x0 && existing_x1 > new_x0) && (existing_y0 <= new_y0 && existing_y1 > new_y0))
+                        if ((existing_x0 <= new_x0 && existing_x1 > new_x0) && (existing_y0 <= new_y0 && existing_y1 >= new_y0))
                         {
                             bool point = if_distance_equal(existing_x0, existing_y0, existing_x1, existing_y1, new_x0, new_y0);
                             if (point)
@@ -172,7 +158,7 @@ bool check_two_lines_parallel_and_overlap(int existing_x0, int existing_y0, int 
                                 return true;
                             }
                         }
-                        else if ((existing_x0 < new_x1 && existing_x1 >= new_x1) && (existing_y0 < new_y1 && existing_y1 >= new_y1))
+                        else if ((existing_x0 < new_x1 && existing_x1 >= new_x1) && (existing_y0 <= new_y1 && existing_y1 >= new_y1))
                         {
                             bool point = if_distance_equal(existing_x0, existing_y0, existing_x1, existing_y1, new_x1, new_y1);
                             if (point)
@@ -182,7 +168,7 @@ bool check_two_lines_parallel_and_overlap(int existing_x0, int existing_y0, int 
                         }
                     }
                     // new overlaps existing
-                    if ((new_x0 <= existing_x0 && new_x1 > existing_x1) && (new_y0 <= existing_y0 && new_y1 > existing_y1))
+                    if ((new_x0 <= existing_x0 && new_x1 >= existing_x1) && (new_y0 <= existing_y0 && new_y1 >= existing_y1))
                     {
                         bool point1 = if_distance_equal(new_x0, new_y0, new_x1, new_y1, existing_x0, existing_y0);
                         bool point2 = if_distance_equal(new_x0, new_y0, new_x1, new_y1, existing_x1, existing_y1);
@@ -193,7 +179,7 @@ bool check_two_lines_parallel_and_overlap(int existing_x0, int existing_y0, int 
                     }
                     else
                     {
-                        if ((new_x0 <= existing_x0 && new_x1 > existing_x0) && (new_y0 <= existing_y0 && new_y1 > existing_y0))
+                        if ((new_x0 <= existing_x0 && new_x1 > existing_x0) && (new_y0 <= existing_y0 && new_y1 >= existing_y0))
                         {
                             bool point = if_distance_equal(new_x0, new_y0, new_x1, new_y1, existing_x0, existing_y0);
                             if (point)
@@ -201,7 +187,7 @@ bool check_two_lines_parallel_and_overlap(int existing_x0, int existing_y0, int 
                                 return true;
                             }
                         }
-                        else if ((new_x0 < existing_x1 && new_x1 >= existing_x1) && (new_y0 < existing_y1 && new_y1 >= existing_y1))
+                        else if ((new_x0 < existing_x1 && new_x1 >= existing_x1) && (new_y0 <= existing_y1 && new_y1 >= existing_y1))
                         {
                             bool point = if_distance_equal(new_x0, new_y0, new_x1, new_y1, existing_x1, existing_y1);
                             if (point)
@@ -214,7 +200,7 @@ bool check_two_lines_parallel_and_overlap(int existing_x0, int existing_y0, int 
                 else
                 {
                     // negative slope existing overlaps new
-                    if ((existing_x0 >= new_x0 && existing_x1 < new_x1) && (existing_y0 <= new_y0 && existing_y1 > new_y1))
+                    if ((existing_x0 >= new_x0 && existing_x1 <= new_x1) && (existing_y0 <= new_y0 && existing_y1 >= new_y1))
                     {
                         bool point1 = if_distance_equal(existing_x0, existing_y0, existing_x1, existing_y1, new_x0, new_y0);
                         bool point2 = if_distance_equal(existing_x0, existing_y0, existing_x1, existing_y1, new_x1, new_y1);
@@ -225,7 +211,7 @@ bool check_two_lines_parallel_and_overlap(int existing_x0, int existing_y0, int 
                     }
                     else
                     {
-                        if ((existing_x0 >= new_x0 && existing_x1 < new_x0) && (existing_y0 <= new_y0 && existing_y1 > new_y0))
+                        if ((existing_x0 >= new_x0 && existing_x1 < new_x0) && (existing_y0 <= new_y0 && existing_y1 >= new_y0))
                         {
                             bool point = if_distance_equal(existing_x0, existing_y0, existing_x1, existing_y1, new_x0, new_y0);
                             if (point)
@@ -233,7 +219,7 @@ bool check_two_lines_parallel_and_overlap(int existing_x0, int existing_y0, int 
                                 return true;
                             }
                         }
-                        else if ((existing_x0 > new_x1 && existing_x1 <= new_x1) && (existing_y0 < new_y1 && existing_y1 >= new_y1))
+                        else if ((existing_x0 > new_x1 && existing_x1 <= new_x1) && (existing_y0 <= new_y1 && existing_y1 >= new_y1))
                         {
                             bool point = if_distance_equal(existing_x0, existing_y0, existing_x1, existing_y1, new_x1, new_y1);
                             if (point)
@@ -242,7 +228,7 @@ bool check_two_lines_parallel_and_overlap(int existing_x0, int existing_y0, int 
                             }
                         }
                     }
-                    if ((new_x0 >= existing_x0 && new_x1 < existing_x1) && (new_y0 <= existing_y0 && new_y1 > existing_y1))
+                    if ((new_x0 >= existing_x0 && new_x1 <= existing_x1) && (new_y0 <= existing_y0 && new_y1 >= existing_y1))
                     {
                         bool point1 = if_distance_equal(new_x0, new_y0, new_x1, new_y1, existing_x0, existing_y0);
                         bool point2 = if_distance_equal(new_x0, new_y0, new_x1, new_y1, existing_x1, existing_y1);
@@ -253,7 +239,7 @@ bool check_two_lines_parallel_and_overlap(int existing_x0, int existing_y0, int 
                     }
                     else
                     {
-                        if ((new_x0 >= existing_x0 && new_x1 < existing_x0) && (new_y0 <= existing_y0 && new_y1 > existing_y0))
+                        if ((new_x0 >= existing_x0 && new_x1 < existing_x0) && (new_y0 <= existing_y0 && new_y1 >= existing_y0))
                         {
                             bool point = if_distance_equal(new_x0, new_y0, new_x1, new_y1, existing_x0, existing_y0);
                             if (point)
@@ -261,7 +247,7 @@ bool check_two_lines_parallel_and_overlap(int existing_x0, int existing_y0, int 
                                 return true;
                             }
                         }
-                        else if ((new_x0 > existing_x1 && new_x1 <= existing_x1) && (new_y0 < existing_y1 && new_y1 >= existing_y1))
+                        else if ((new_x0 > existing_x1 && new_x1 <= existing_x1) && (new_y0 <= existing_y1 && new_y1 >= existing_y1))
                         {
                             bool point = if_distance_equal(new_x0, new_y0, new_x1, new_y1, existing_x1, existing_y1);
                             if (point)
@@ -429,10 +415,10 @@ bool check_if_overlap(int curr_num_line_segments, new_graphs &a1, std::tuple<int
                         }
                         else
                         {
-                            graph_existing_src_x = x0;
-                            graph_existing_src_y = y0;
-                            graph_existing_dst_x = x1;
-                            graph_existing_dst_y = y1;
+                            graph_existing_src_x = x1;
+                            graph_existing_src_y = y1;
+                            graph_existing_dst_x = x0;
+                            graph_existing_dst_y = y0;
                         }
                         bool if_vertical_overlap = check_two_lines_parallel_and_overlap(graph_existing_src_x, graph_existing_src_y, graph_existing_dst_x, graph_existing_dst_y,
                                                                                         new_segment_src_x, new_segment_src_y, new_segment_dst_x, new_segment_dst_y, is_vertical_new_segment, is_vertical_existing);
