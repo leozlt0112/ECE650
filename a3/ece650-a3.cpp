@@ -64,7 +64,7 @@ int main(int argc, char **argv)
         close(bigpipe[0]);
         close(bigpipe[1]);
         argv[0] = (char *)"./regen";
-        execvp("./regen", argv);
+        execv("./regen", argv);
     }
     kids.push_back(child_pid);
     child_pid2 = fork();
