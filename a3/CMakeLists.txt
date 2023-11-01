@@ -7,7 +7,6 @@ project(ece650-a3)
 # enable c++11 support
 set (CMAKE_CXX_FLAGS "-std=c++11 -Wall ${CMAKE_CXX_FLAGS}")
 set(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/run)
-set(CMAKE_BUILD_TYPE debug)
 
 option(WITH_ASAN "Enabled AddressSanitizer to detect memory faults" OFF)
 if(WITH_ASAN)
