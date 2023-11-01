@@ -149,7 +149,7 @@ public:
                 std::cout << final_output[i];
             }
         }
-        std::cout << "\n";
+        std::cout << std::endl;
     }
 };
 char cmd;
@@ -263,19 +263,19 @@ int main(int argc, char **argv)
                     if (a.set(edge_vector) == false)
                     {
                         std::cerr << "Error: graph do not exist "
-                                  << "\n";
+                                  << std::endl;
                         continue;
                     }
                     if (source > 0 && source <= num_vertexes)
                     {
-                        std::cout << source << "\n";
+                        std::cout << source << std::endl;
                         continue;
                     }
                 }
                 bool returned = a.bfs_distances(source, destination);
                 if (returned == false)
                 {
-                    std::cerr << "Error: " << a.error_message << "\n";
+                    std::cerr << "Error: " << a.error_message << std::endl;
                 }
                 else
                 {
@@ -289,22 +289,22 @@ int main(int argc, char **argv)
                 {
                     continue;
                 }
-                std::cout << input_line << "\n";
+                std::cout << input_line << std::endl;
                 graphs a(num_vertexes);
                 if (a.set(edge_vector) == false)
                 {
                     std::string error_message = "Error: edge was above max vertexes allowed or below equal to 0";
-                    std::cerr << "Error: " << error_message << "\n";
+                    std::cerr << "Error: " << error_message << std::endl;
                     goto jump;
                 }
             }
             else if (cmd == 'V')
             {
-                std::cout << input_line << "\n";
+                std::cout << input_line << std::endl;
                 if (num_vertexes <= 1)
                 {
                     std::string error_message = "Error: vertexes below or equal 0";
-                    std::cerr << "Error: " << error_message << "\n";
+                    std::cerr << "Error: " << error_message << std::endl;
                 }
                 first = true;
             }
