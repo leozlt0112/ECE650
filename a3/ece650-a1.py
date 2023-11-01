@@ -613,7 +613,7 @@ def main():
                 #graphs = Graph(database,V)
                 d = b.generate_outputvertex()
                 length = len(d)
-                print('V {}'.format(length))
+                print('V {}'.format(length), flush=True)
                 #for key,value in d.items():
                  #   v1 = "{0:.2f}".format(value[0])
                   #  v2 = "{0:.2f}".format(value[1])
@@ -628,13 +628,14 @@ def main():
                             d.append(c[i])
                  # https://www.geeksforgeeks.org/python-remove-all-values-from-a-list-present-in-other-list/
                 c = [x for x in c if x not in d]
-                print("E = {", end='')
+                print("E = {", end='', flush=True)
                 for index in range(len(c)):
                     if (index != len(c)-1):
-                        print("<{0},{1}>,".format(c[index][0],c[index][1]),end='')
+                        print("<{0},{1}>,".format(c[index][0],c[index][1]),end='', flush=True)
                     else:
-                        print("<{0},{1}>".format(c[index][0],c[index][1]),end='')
-                print("}")
+                        print("<{0},{1}>".format(c[index][0],c[index][1]),end='', flush=True)
+                print("}", flush=True)
+
         except Exception as e:
             print('Error: ' + str(e), file=sys.stderr) 
 
