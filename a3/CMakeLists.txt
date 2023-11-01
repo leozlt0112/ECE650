@@ -19,6 +19,9 @@ endif()
 add_executable(ece650-a2 ece650-a2.cpp )
 add_executable(ece650-a3 ece650-a3.cpp )
 add_executable(regen regen.cpp )
+
 # create the executable for tests
+add_executable(tests test.cpp)
+
 install(PROGRAMS ece650-a1.py DESTINATION bin)
 install(TARGETS ece650-a2 ece650-a3 regen RUNTIME DESTINATION bin)
