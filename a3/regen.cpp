@@ -13,6 +13,7 @@
 #include <climits>
 #include <string>
 #include <map>
+#include <math.h>
 bool genrate_random_num(int *rand_num, int min, int max, std::string &failed)
 {
     std::ifstream urandom("/dev/urandom");
@@ -23,7 +24,7 @@ bool genrate_random_num(int *rand_num, int min, int max, std::string &failed)
     }
     unsigned int num;
     urandom.read(reinterpret_cast<char *>(&num), sizeof(int));
-    // std::cout << num << "\n";
+    // std::cout << num << std::endl;
     num = min + num % (max - min + 1);
     *rand_num = num;
     return true;
@@ -75,52 +76,216 @@ bool check_if_same_pts(new_graphs &a1, std::tuple<int, int> my_tuple, std::strin
     }
     return false;
 }
+bool if_distance_equal(int x0, int y0, int x1, int y1, int x, int y)
+{
+    int dx0 = x - x0;
+    int dy0 = y - y0;
+    int dx1 = x1 - x;
+    int dy1 = y1 - y;
+    int dx = x1 - x0;
+    int dy = y1 - y0;
+    float distance_to_source = sqrt(dx0 * dx0 + dy0 * dy0);
+    float distance_to_dst = sqrt(dx1 * dx1 + dy1 * dy1);
+    float distance_between = sqrt(dx * dx + dy * dy);
+    float tolerance = 1e-6;
+    if (abs(distance_between) - abs(distance_to_source + distance_to_dst) <= tolerance)
+    {
+        return true;
+    }
+    return false;
+}
 // curr_num_line_segments the number of pts currently in the graph rn
 bool check_two_lines_parallel_and_overlap(int existing_x0, int existing_y0, int existing_x1, int existing_y1,
                                           int new_x0, int new_y0, int new_x1, int new_y1, bool is_vertical_new_segment, bool is_vertical_existing)
 {
-    if (is_vertical_new_segment && is_vertical_existing)
+    if (existing_x0 == new_x0 && existing_y0 == new_y0 && existing_x1 == new_x1 && existing_y1 == new_y1)
     {
-        if (existing_x0 == existing_x1 && existing_x0 == new_x1)
-        {
-            if ((new_y0 >= existing_y1) || (existing_y0 >= new_y1))
-            {
-                return false;
-            }
-        }
+        return true;
     }
     else
     {
-        if (is_vertical_new_segment || is_vertical_existing)
+        if (is_vertical_new_segment && is_vertical_existing)
         {
-            return false;
-        }
-        double rise_existing = existing_y1 - existing_y0;
-        double run_existing = existing_x1 - existing_x0;
-        double rise_new = new_y1 - new_y0;
-        double run_new = new_x1 - new_x0;
-        double slope_existing = (double)rise_existing / run_existing;
-        double slope_new = (double)rise_new / run_new;
-        if (slope_existing != slope_new)
-        {
-            return false;
+            if (existing_x0 == new_x0 && existing_x1 == existing_x0)
+            {
+                // new completely overlaps existing
+                if (existing_y0 > new_y0 && existing_y1 < new_y1)
+                {
+                    return true;
+                }
+                // new  partially overlaps existing lower
+                if (existing_y0 >= new_y0 && existing_y0 < new_y1)
+                {
+                    return true;
+                }
+                // new partially overlaps existing higher
+                if (existing_y1 > new_y0 && existing_y1 <= new_y1)
+                {
+                    return true;
+                }
+                // existing completely overlaps new
+                if (new_y0 > existing_y0 && new_y1 < existing_y1)
+                {
+                    return true;
+                }
+                // existing partially overlaps new lower
+                if (new_y0 >= existing_y0 && new_y0 < existing_y1)
+                {
+                    return true;
+                }
+
+                if (new_y1 > existing_y0 && new_y1 <= existing_y1)
+                {
+                    return true;
+                }
+            }
         }
         else
         {
-            if ((new_y0 >= existing_y1) || (existing_y0 >= new_y1))
+            double rise_existing = existing_y1 - existing_y0;
+            double run_existing = existing_x1 - existing_x0;
+            double rise_new = new_y1 - new_y0;
+            double run_new = new_x1 - new_x0;
+            double slope_existing = (double)rise_existing / run_existing;
+            double slope_new = (double)rise_new / run_new;
+            if (slope_existing == slope_new)
             {
-                return false;
+                if (slope_existing >= 0)
+                {
+                    // existing completely overlaps new
+                    if ((existing_x0 <= new_x0 && existing_x1 > new_x1) && (existing_y0 <= new_y0 && existing_y1 > new_y1))
+                    {
+                        bool point1 = if_distance_equal(existing_x0, existing_y0, existing_x1, existing_y1, new_x0, new_y0);
+                        bool point2 = if_distance_equal(existing_x0, existing_y0, existing_x1, existing_y1, new_x1, new_y1);
+                        if (point1 && point2)
+                        {
+                            return true;
+                        }
+                    }
+                    else
+                    {
+                        if ((existing_x0 <= new_x0 && existing_x1 > new_x0) && (existing_y0 <= new_y0 && existing_y1 > new_y0))
+                        {
+                            bool point = if_distance_equal(existing_x0, existing_y0, existing_x1, existing_y1, new_x0, new_y0);
+                            if (point)
+                            {
+                                return true;
+                            }
+                        }
+                        else if ((existing_x0 < new_x1 && existing_x1 >= new_x1) && (existing_y0 < new_y1 && existing_y1 >= new_y1))
+                        {
+                            bool point = if_distance_equal(existing_x0, existing_y0, existing_x1, existing_y1, new_x1, new_y1);
+                            if (point)
+                            {
+                                return true;
+                            }
+                        }
+                    }
+                    // new overlaps existing
+                    if ((new_x0 <= existing_x0 && new_x1 > existing_x1) && (new_y0 <= existing_y0 && new_y1 > existing_y1))
+                    {
+                        bool point1 = if_distance_equal(new_x0, new_y0, new_x1, new_y1, existing_x0, existing_y0);
+                        bool point2 = if_distance_equal(new_x0, new_y0, new_x1, new_y1, existing_x1, existing_y1);
+                        if (point1 & point2)
+                        {
+                            return true;
+                        }
+                    }
+                    else
+                    {
+                        if ((new_x0 <= existing_x0 && new_x1 > existing_x0) && (new_y0 <= existing_y0 && new_y1 > existing_y0))
+                        {
+                            bool point = if_distance_equal(new_x0, new_y0, new_x1, new_y1, existing_x0, existing_y0);
+                            if (point)
+                            {
+                                return true;
+                            }
+                        }
+                        else if ((new_x0 < existing_x1 && new_x1 >= existing_x1) && (new_y0 < existing_y1 && new_y1 >= existing_y1))
+                        {
+                            bool point = if_distance_equal(new_x0, new_y0, new_x1, new_y1, existing_x1, existing_y1);
+                            if (point)
+                            {
+                                return true;
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    // negative slope existing overlaps new
+                    if ((existing_x0 >= new_x0 && existing_x1 < new_x1) && (existing_y0 <= new_y0 && existing_y1 > new_y1))
+                    {
+                        bool point1 = if_distance_equal(existing_x0, existing_y0, existing_x1, existing_y1, new_x0, new_y0);
+                        bool point2 = if_distance_equal(existing_x0, existing_y0, existing_x1, existing_y1, new_x1, new_y1);
+                        if (point1 && point2)
+                        {
+                            return true;
+                        }
+                    }
+                    else
+                    {
+                        if ((existing_x0 >= new_x0 && existing_x1 < new_x0) && (existing_y0 <= new_y0 && existing_y1 > new_y0))
+                        {
+                            bool point = if_distance_equal(existing_x0, existing_y0, existing_x1, existing_y1, new_x0, new_y0);
+                            if (point)
+                            {
+                                return true;
+                            }
+                        }
+                        else if ((existing_x0 > new_x1 && existing_x1 <= new_x1) && (existing_y0 < new_y1 && existing_y1 >= new_y1))
+                        {
+                            bool point = if_distance_equal(existing_x0, existing_y0, existing_x1, existing_y1, new_x1, new_y1);
+                            if (point)
+                            {
+                                return true;
+                            }
+                        }
+                    }
+                    if ((new_x0 >= existing_x0 && new_x1 < existing_x1) && (new_y0 <= existing_y0 && new_y1 > existing_y1))
+                    {
+                        bool point1 = if_distance_equal(new_x0, new_y0, new_x1, new_y1, existing_x0, existing_y0);
+                        bool point2 = if_distance_equal(new_x0, new_y0, new_x1, new_y1, existing_x1, existing_y1);
+                        if (point1 && point2)
+                        {
+                            return true;
+                        }
+                    }
+                    else
+                    {
+                        if ((new_x0 >= existing_x0 && new_x1 < existing_x0) && (new_y0 <= existing_y0 && new_y1 > existing_y0))
+                        {
+                            bool point = if_distance_equal(new_x0, new_y0, new_x1, new_y1, existing_x0, existing_y0);
+                            if (point)
+                            {
+                                return true;
+                            }
+                        }
+                        else if ((new_x0 > existing_x1 && new_x1 <= existing_x1) && (new_y0 < existing_y1 && new_y1 >= existing_y1))
+                        {
+                            bool point = if_distance_equal(new_x0, new_y0, new_x1, new_y1, existing_x1, existing_y1);
+                            if (point)
+                            {
+                                return true;
+                            }
+                        }
+                    }
+                }
             }
         }
     }
-    return true;
+    return false;
 }
 bool check_if_overlap(int curr_num_line_segments, new_graphs &a1, std::tuple<int, int> my_tuple, std::string key)
 {
-    if (curr_num_line_segments <= 1)
-    {
-        return false;
-    }
+    // if (curr_num_line_segments <= 1)
+    // {
+    //     if (!a1.myMultimap.empty())
+
+    //         for (auto i = a1.myMultimap.begin(); i != a1.myMultimap.end(); i++)
+    //         {
+    //         }
+    // }
     auto range = a1.myMultimap.equal_range(key);
     int graph_src_x;
     int graph_src_y;
@@ -146,7 +311,7 @@ bool check_if_overlap(int curr_num_line_segments, new_graphs &a1, std::tuple<int
     else
     {
         // std::cout << "There is a problem with multimap, checklogic"
-        //         << "\n";
+        //         << std::endl;
     }
     bool is_vertical_new_segment = false;
     // dw about vertical line rn
@@ -438,17 +603,37 @@ int main(int argc, char **argv)
             cint_value = atoi(cvalue.c_str());
         }
     }
+    if (sint_value < 2)
+    {
+        std::cerr << "Error: s argument less than 2" << std::endl;
+        exit(1);
+    }
+    if (nint_value < 1)
+    {
+        std::cerr << "Error: n argument less than 1" << std::endl;
+        exit(1);
+    }
+    if (lint_value < 5)
+    {
+        std::cerr << "Error: l argument less than 5" << std::endl;
+        exit(1);
+    }
+    if (cint_value < 1)
+    {
+        std::cerr << "Error: c argument less than 1" << std::endl;
+        exit(1);
+    }
     x_y_range = cint_value;
     // std::cout << "s   " << sint_value << "l   " << lint_value << "c   " << cint_value << "n   " << nint_value << std::endl;
     //  while (1)
     //{
     std::string failed_message;
-    // std::cout << "My sint " << sint_value << std::endl;
     bool results = genrate_random_num(&num_streets, 2, sint_value, failed_message);
     if (!results)
     {
         std::cerr << "Error: " << failed_message << std::endl;
     }
+
     // std::cout << "My num streets " << num_streets << std::endl;
     //  for now for num of line segments is the same
     results = genrate_random_num(&num_line_segments, 1, nint_value, failed_message);
@@ -463,8 +648,8 @@ int main(int argc, char **argv)
     {
         std::cerr << "Error: " << failed_message << std::endl;
     }
-    // std::cout << "My number of wait seconds" << num_wait << std::endl;
     // missing code for generating x,y coordinates
+
     int curr_num_streets = 0;
     int failed_attempt = 0;
     new_graphs a1;
@@ -492,7 +677,7 @@ int main(int argc, char **argv)
                     {
                         std::cerr << "Error: failed to generate valid input for 25 simultaneous attempts" << std::endl;
                         // failed = true;
-                        return 1;
+                        exit(1);
                     }
                     int a;
                     int b;
@@ -518,7 +703,12 @@ int main(int argc, char **argv)
                         // goto end_of_while;
                         continue;
                     }
-
+                    if (curr_num_line_segments <= 1)
+                    {
+                        a1.myMultimap.insert(std::make_pair(street_name, my_tuple));
+                        curr_num_line_segments++;
+                        continue;
+                    }
                     bool if_overlap = check_if_overlap(curr_num_line_segments, a1, my_tuple, street_name);
                     if (if_overlap)
                     {
@@ -528,7 +718,6 @@ int main(int argc, char **argv)
                     // a1.myStreets_Segments.push_back(my_tuple);
                     // bool check_if_overlap(a1, my_tuple);
                     a1.myMultimap.insert(std::make_pair(street_name, my_tuple));
-
                     curr_num_line_segments++;
 
                 end_of_while:;
@@ -546,7 +735,7 @@ int main(int argc, char **argv)
                     if (failed_attempt == 25)
                     {
                         std::cerr << "Error: failed to generate valid input for 25 simultaneous attempts" << std::endl;
-                        return 1;
+                        exit(1);
                     }
                     for (auto keyIt = a1.myMultimap.begin(); keyIt != a1.myMultimap.end(); keyIt++)
                     {
@@ -567,7 +756,7 @@ int main(int argc, char **argv)
                             if (failed_attempt == 25)
                             {
                                 std::cerr << "Error: failed to generate valid input for 25 simultaneous attempts" << std::endl;
-                                return 1;
+                                exit(1);
                             }
                             int a;
                             int b;
@@ -591,6 +780,12 @@ int main(int argc, char **argv)
                                 // You should include some code here before using 'goto'
                                 failed_attempt++;
                                 // goto end_of_repeated;
+                                continue;
+                            }
+                            if (curr_num_line_segments < 1)
+                            {
+                                a1.myMultimap.insert(std::make_pair(street_name, my_tuple));
+                                curr_num_line_segments++;
                                 continue;
                             }
                             bool if_overlap = check_if_overlap(curr_num_line_segments, a1, my_tuple, street_name);
@@ -623,17 +818,27 @@ int main(int argc, char **argv)
                 std::cout << "add "
                           << "\"" << my_key << "\""
                           << " ";
+                // std::cerr << "add "
+                //           << "\"" << my_key << "\""
+                //           << " ";
                 auto range = a1.myMultimap.equal_range(my_key);
                 for (auto itr = range.first; itr != range.second; ++itr)
                 {
                     std::cout << "(" << std::get<0>(itr->second);
+                    // std::cerr << "(" << std::get<0>(itr->second);
                     std::cout << "," << std::get<1>(itr->second) << ") ";
+                    // std::cerr << "," << std::get<1>(itr->second) << ") ";
                 }
-                std::cout << "\n";
+                std::cout << std::endl;
+                // std::cerr << std::endl;
+                // fflush(stdout);
             }
         }
         std::cout << "gg"
-                  << "\n";
+                  << std::endl;
+        // std::cerr << "gg"
+        //           << std::endl;
+        // fflush(stdout);
         sleep(num_wait);
         for (auto i = a1.myMultimap.begin(); i != a1.myMultimap.end(); ++i)
         {
@@ -643,10 +848,12 @@ int main(int argc, char **argv)
                 my_key = currentKey;
                 std::cout << "rm "
                           << "\"" << my_key << "\""
-                          << "\n";
+                          << std::endl;
+                // fflush(stdout);
             }
         }
         a1.myMultimap.clear();
+        failed_attempt = 0;
         curr_num_streets = 0;
     }
     // a1.print();
