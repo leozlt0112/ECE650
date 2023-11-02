@@ -77,7 +77,7 @@ int main(int argc, char **argv)
         close(bigpipe[0]);
         dup2(bigpipe[1], STDOUT_FILENO);
         close(bigpipe[1]);
-        execlp("python3", "python3", "ece650-a1.py", NULL);
+        execlp("/usr/bin/python3", "python3", "ece650-a1.py", NULL);
     }
     kids.push_back(child_pid2);
     child_pid3 = fork();
