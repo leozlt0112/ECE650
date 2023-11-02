@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 import sys
 import math
-import matplotlib
-matplotlib.use('Agg')
-import matplotlib.pyplot as plt
-import numpy as np
-import pylab as pl
-from matplotlib import collections as mc
+#import matplotlib
+#matplotlib.use('Agg')
+#import matplotlib.pyplot as plt
+#import numpy as np
+#import pylab as pl
+#from matplotlib import collections as mc
 from math import sqrt
 import re
 # YOUR CODE GOES HERE
