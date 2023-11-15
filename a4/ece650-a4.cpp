@@ -169,14 +169,14 @@ bool find_vertex_cover(Graphs &a, int k)
         solver->addClause(clause4);
         clause4.clear();
     }
-
+    clause4.clear();
+    clause1.clear();
     bool res = solver->solve();
-    // std::cout << "resolved" << std::endl;
     if (res == 0)
     {
+        solver.reset(new Minisat::Solver());
         return res;
     }
-    // std::cout << res << std::endl;
     for (int j = 0; j < k; j++)
     {
         for (int i = 0; i < n; i++)
@@ -187,11 +187,11 @@ bool find_vertex_cover(Graphs &a, int k)
             }
         }
     }
+    solver.reset(new Minisat::Solver());
     return res;
 }
 int main(int argc, char **argv)
 {
-    // std::vector<std::vector<int>> edges2;
     while (!std::cin.eof())
     {
         std::string input_line;
