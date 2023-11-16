@@ -27,17 +27,7 @@ public:
         for (auto i = edge_vector.begin(); i != edge_vector.end(); i++)
         {
             int first = std::get<0>(*i);
-            // std::cout << first << std::endl;
             myMultimap.insert({first, std::get<1>(*i)});
-        }
-    }
-    void print()
-    {
-        // int current_key = -1;
-        for (auto i = myMultimap.begin(); i != myMultimap.end(); i++)
-        {
-            int key = i->first;
-            std::cout << key << std::endl;
         }
     }
 };
